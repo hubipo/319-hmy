@@ -23,110 +23,70 @@
  ****************************************************************************/
 
 #include "HelloWorldScene.h"
-USING_NS_CC;
-/********************************/
-//HELLOWORLD
-/********************************/
-Scene* HelloWorld::createScene()
+#include "AudioEngine.h"
+#include "ui/CocosGUI.h"
+/**************************/
+/*模板函数*/
+//添加精灵
+template <typename T>
+void createAndAddSprite(T* obj, const std::string& filename, float scale, float x, float y, int Zorder)
 {
-    return HelloWorld::create();
+    auto sprite = Sprite::create(filename);
+    sprite->setScale(scale);
+    if (sprite == nullptr) {
+        problemLoading("HelloWorld.png");
+    }
+    else {
+        sprite->setPosition(Vec2(x, y));
+        obj->addChild(sprite, Zorder);
+    }
 }
+//添加标签
+template<typename T1, typename T2>
+void createAndAddLabel(T1* obj, T2&label, const std::string& filename, float Pos_X, float Pos_Y, int Zorder)
+{
+    label= Label::createWithTTF(filename, "fonts/Marker Felt.ttf", 24);
+    if (label == nullptr)
+    {
+        problemLoading("HelloWorld.png");
+    }
+    else
+    {
+        label->setPosition(Vec2(Pos_X, Pos_Y));
+        obj->addChild(label, Zorder);
+    }
+}
+//添加菜单按钮
+template<typename T1,typename T2>
+void modifyMenuItem(T1*obj,T2& MenuItem, float Pos_X, float Pos_Y, float scale, int Zorder)
+{
+    MenuItem->setScale(scale);
+    if (MenuItem == nullptr || MenuItem->getContentSize().width <= 0 || MenuItem->getContentSize().height <= 0)
+    {
+        problemLoading("HelloWorld.png");
+    }
+    else
+    {
+        MenuItem->setPosition(Vec2(Pos_X, Pos_Y));
+    }
+    auto menu = Menu::create(MenuItem, nullptr);
+    menu->setPosition(Vec2::ZERO);
+    obj->addChild(menu, Zorder);
+}
+/***********************/
+/*全局变量*/
+int audio;//背景音
+
+
+/***********************/
+USING_NS_CC;
+
 // Print useful error message instead of segfaulting when files are not there.
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
 }
-
-// on "init" you need to initialize your instance
-bool HelloWorld::init()
-{
-    //////////////////////////////
-    // 1. super init first
-    if ( !Scene::init() )
-    {
-        return false;
-    }
-
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
-
-    if (closeItem == nullptr ||
-        closeItem->getContentSize().width <= 0 ||
-        closeItem->getContentSize().height <= 0)
-    {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width - closeItem->getContentSize().width/2;
-        float y = origin.y + closeItem->getContentSize().height/2;
-        closeItem->setPosition(Vec2(x,y));
-    }
-
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-
-    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-    if (label == nullptr)
-    {
-        problemLoading("'fonts/Marker Felt.ttf'");
-    }
-    else
-    {
-        // position the label on the center of the screen
-        label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                                origin.y + visibleSize.height - label->getContentSize().height));
-
-        // add the label as a child to this layer
-        this->addChild(label, 1);
-    }
-
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    if (sprite == nullptr)
-    {
-        problemLoading("'HelloWorld.png'");
-    }
-    else
-    {
-        // position the sprite on the center of the screen
-        sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-        // add the sprite as a child to this layer
-        this->addChild(sprite, 0);
-    }
-    return true;
-}
-void HelloWorld::menuCloseCallback(Ref* pSender)
-{
-    //Close the cocos2d-x game scene and quit the application
-    Director::getInstance()->end();
-
-    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
-
-    //EventCustom customEndEvent("game_scene_close_event");
-    //_eventDispatcher->dispatchEvent(&customEndEvent);
-}
-
 /********************************/
 //Scene_menu
 /********************************/
@@ -134,146 +94,41 @@ Scene* Scene_menu::createScene()
 {
     return Scene_menu::create();
 }
-// Print useful error message instead of segfaulting when files are not there.
 bool Scene_menu::init()
 {
     if (!Scene::init())
         return false;
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-    Sprite* sprite_1 = Sprite::create("background_menu.png");
-    sprite_1->setScale(3.0f);
-    if (sprite_1 == NULL)
-    {
-        problemLoading("HelloWorld.png");
-    }
-    else
-    {
-        sprite_1->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-        this->addChild(sprite_1, -1);
-    }
-    auto sprite_2 = Sprite::create("menu_1.png");
-    sprite_2->setScale(0.8f);
-    if (sprite_2 == NULL)
-    {
-        problemLoading("HelloWorld.png");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width*1.8 / 10;
-        float y = origin.y + visibleSize.height / 10;
-        sprite_2->setPosition(Vec2(x, y));
-        this->addChild(sprite_2, 0);
-    }
-    auto sprite_3 = Sprite::create("menu_2.png");
-    sprite_3->setScale(0.8f);
-    if (sprite_3 == NULL)
-    {
-        problemLoading("HelloWorld.png");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width*8.3/10.0;
-        float y = origin.y + visibleSize.height / 10;
-        sprite_3->setPosition(Vec2(x, y));
-        this->addChild(sprite_3, 0);  
-    } 
-    auto sprite_4 = Sprite::create("menu_3.png");
-    sprite_4->setScale(1.3f);
-    if (sprite_4 == NULL)
-    {
-        problemLoading("HelloWorld.png");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width * 1.8 / 10;
-        float y = origin.y + visibleSize.height *6.5/ 10;
-        sprite_4->setPosition(Vec2(x, y));
-        this->addChild(sprite_4, 0);
-    } 
-    auto sprite_5 = Sprite::create("menu_4.png");
-    sprite_5->setScale(1.3f);
-    if (sprite_5 == NULL)
-    {
-        problemLoading("HelloWorld.png");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width * 8.3 / 10;
-        float y = origin.y + visibleSize.height * 6.5 / 10;
-        sprite_5->setPosition(Vec2(x, y));
-        this->addChild(sprite_5, 0);
-    }
-    /*********/
-    /*label*/
-    /*********/
-    auto signal=Label::createWithTTF("Teamfight Tactics", "fonts/Marker Felt.ttf", 24);
-    if (signal == NULL)
-    {
-        problemLoading("WRONG");
-    }
-    else
-    {
-        signal->setPosition(Vec2(origin.x + visibleSize.width / 2,
-            origin.y + visibleSize.height - signal->getContentSize().height));
-        signal->enableOutline(Color4B::RED, 1);
-        this->addChild(signal, 0);
-    }
+    audio = AudioEngine::play2d("Mymuuuuusic.mp3",true);
     /********/
+    /*Sprite*/
+    /********/
+    createAndAddSprite(this, "background_menu.png", 3.0f, visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y, -1);
+    createAndAddSprite(this, "menu_1.png", 0.8f, origin.x + visibleSize.width * 1.8 / 10, origin.y + visibleSize.height / 10, 0);
+    createAndAddSprite(this, "menu_2.png", 0.8f, origin.x + visibleSize.width * 8.3 / 10.0, origin.y + visibleSize.height / 10, 0);
+    createAndAddSprite(this, "menu_3.png", 1.3f, origin.x + visibleSize.width * 1.8 / 10, origin.y + visibleSize.height * 6.5 / 10, 0);
+    createAndAddSprite(this, "menu_4.png", 1.3f, origin.x + visibleSize.width * 8.3 / 10, origin.y + visibleSize.height * 6.5 / 10, 0);
+    /*******/
+    /*Label*/
+    /*******/
+    Label* signal;
+    createAndAddLabel(this,signal, "Teamfight Tactics", origin.x + visibleSize.width / 2,origin.y + visibleSize.height*9/10.0, 0);
+    signal->enableOutline(Color4B::RED, 1);
+    /**********/
     /*menuItem*/
-    /********/
+    /**********/
     auto START = MenuItemImage::create("START_menu.png", "START_menu.png", CC_CALLBACK_1(Scene_menu::menuSTART, this));
-    START->setScale(2.0f);
-    if (START == NULL || START->getContentSize().width <= 0 || START->getContentSize().height <= 0)
-    {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width/2;
-        float y = origin.y+visibleSize.height/10;
-        START->setPosition(Vec2(x, y));
-    }
-    auto menu = Menu::create(START, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
+    modifyMenuItem(this,START, origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 10, 2.0f, 1);
     auto SETTINGS= MenuItemImage::create("SETTINGS.png", "SETTINGS.png", CC_CALLBACK_1(Scene_menu::menuSETTINGS, this));
-    SETTINGS->setScale(0.3f);
-    if (SETTINGS == NULL || SETTINGS->getContentSize().width <= 0 || SETTINGS->getContentSize().height <= 0)
-    {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-    }
-    else
-    {
-        float x = origin.x +visibleSize.width*9.5/10.0;
-        float y = origin.y+ visibleSize.height*9.3/10;
-        SETTINGS->setPosition(Vec2(x, y));
-    }
-    auto menu_SETTINGS = Menu::create(SETTINGS, NULL);
-    menu_SETTINGS->setPosition(Vec2::ZERO);
-    this->addChild(menu_SETTINGS, 1);
-    //12up
+    modifyMenuItem(this, SETTINGS, origin.x + visibleSize.width * 9.5 / 10.0, origin.y + visibleSize.height * 9.3 / 10, 0.3f, 1);
     auto menu_12up = MenuItemImage::create("12.png", "12.png", CC_CALLBACK_1(Scene_menu::menu12up, this));
-    menu_12up->setScale(0.8f);
-    if (menu_12up == NULL || menu_12up->getContentSize().width <= 0 || menu_12up->getContentSize().height <= 0)
-    {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width/10;
-        float y = origin.y + visibleSize.height*8.5 / 10;
-        menu_12up->setPosition(Vec2(x, y));
-    }
-    auto Menu_12up = Menu::create(menu_12up, NULL);
-    Menu_12up->setPosition(Vec2::ZERO);
-    this->addChild(Menu_12up, 1);
+    modifyMenuItem(this, menu_12up, origin.x + visibleSize.width / 10, origin.y + visibleSize.height * 8.5 / 10, 0.8f, 1);
     return true;
 }
 void  Scene_menu::menuSTART(Ref* pSender)
 {
-    auto HELLOWORLD = HelloWorld::createScene();
+    auto HELLOWORLD = Scene_ChessBoard::createScene();
     //Director::getInstance()->replaceScene(HELLOWORLD);
     // 0*3黑色 255*3白色
     Director::getInstance()->replaceScene(TransitionFade::create(0.5, HELLOWORLD, Color3B(0, 0, 0)));
@@ -281,14 +136,14 @@ void  Scene_menu::menuSTART(Ref* pSender)
 void  Scene_menu::menuSETTINGS(Ref* pSender)
 {
     //需要跳到settings中
-    auto SETTINGS = HelloWorld::createScene();
+    auto SETTINGS = Scene_Setting::createScene();
     //Director::getInstance()->replaceScene(SETTINGS);
     Director::getInstance()->pushScene(TransitionCrossFade::create(1, SETTINGS));
 }
 void Scene_menu::menu12up(Ref* pSender)
 {
     auto scene_12up = Scene_12up::create();
-    Director::getInstance()->pushScene(scene_12up);
+    Director::getInstance()->pushScene(TransitionCrossFade::create(1, scene_12up));
 }
 /**********/
 /*12+*/
@@ -297,7 +152,6 @@ Scene* Scene_12up::createScene()
 {
     return Scene_12up::create();
 }
-// on "init" you need to initialize your instance
 bool Scene_12up::init()
 {
     //////////////////////////////
@@ -311,7 +165,7 @@ bool Scene_12up::init()
     /********/
     auto Scene_12up = MenuItemImage::create("12up.png", "12up.png",CC_CALLBACK_1(Scene_12up::CLOSE, this));
     Scene_12up->setScale(2.0f);
-    if (Scene_12up == NULL || Scene_12up->getContentSize().width <= 0 || Scene_12up->getContentSize().height <= 0)
+    if (Scene_12up == nullptr || Scene_12up->getContentSize().width <= 0 || Scene_12up->getContentSize().height <= 0)
     {
         problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
     }
@@ -321,7 +175,7 @@ bool Scene_12up::init()
         float y = origin.y + visibleSize.height / 2;
         Scene_12up->setPosition(Vec2(x, y));
     }
-    auto Menu_12up = Menu::create(Scene_12up, NULL);
+    auto Menu_12up = Menu::create(Scene_12up, nullptr);
     Menu_12up->setPosition(Vec2::ZERO);
     this->addChild(Menu_12up, 1);
     return true;
@@ -331,4 +185,59 @@ void Scene_12up::CLOSE(Ref* pSender)
     Director::getInstance()->popScene();
     //auto scene = Scene_menu::create();
     //Director::getInstance()->replaceScene(scene);
+}
+/********************************/
+//Scene_Setting
+/********************************/
+Scene* Scene_Setting::createScene()
+{
+    return Scene_Setting::create();
+}
+
+bool Scene_Setting::init()
+{
+    if (!Scene::init())
+    {
+        return false;
+    }
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    
+    Label* Sound;
+    createAndAddLabel(this, Sound, "Sound", origin.x + visibleSize.width/3.0, origin.y + visibleSize.height/3.0, 1);
+    Sound->enableShadow();
+    Sound->setColor(Color3B::RED);
+    createAndAddSprite(this, "ALLWHITE.png", 3.0f, origin.x + visibleSize.width / 2, origin.y + visibleSize.height, 0);
+    return true;
+}
+/********************************/
+//Scene_ChessBoard
+/********************************/
+Scene* Scene_ChessBoard::createScene()
+{
+    return Scene_ChessBoard::create();
+}
+bool Scene_ChessBoard::init()
+{
+    if (!Scene::init())
+    {
+        return false;
+    }
+
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+    auto closeItem = MenuItemImage::create("CloseNormal.png","CloseSelected.png",CC_CALLBACK_1(Scene_ChessBoard::menuCloseCallback, this));
+    modifyMenuItem(this, closeItem, origin.x + visibleSize.width - closeItem->getContentSize().width / 2, origin.y + closeItem->getContentSize().height / 2, 1.0f, 1);
+
+    Label* label;
+    createAndAddLabel(this, label, "ChessBoard", origin.x + visibleSize.width / 2, origin.y + visibleSize.height * 9 / 10, 1);
+   
+    createAndAddSprite(this, "qipan_1.jpg", 2.0f, visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y, 0);
+
+    return true;
+}
+void Scene_ChessBoard::menuCloseCallback(Ref* pSender)
+{
+    Director::getInstance()->end();
 }

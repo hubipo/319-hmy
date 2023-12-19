@@ -21,28 +21,13 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
-#ifndef __HELLOWORLD_SCENE_H__
-#define __HELLOWORLD_SCENE_H__
-
 #include "cocos2d.h"
-
-class HelloWorld : public cocos2d::Scene
-{
-public:
-    static cocos2d::Scene* createScene();
-
-    virtual bool init();
-    
-    // a selector callback
-    void menuCloseCallback(cocos2d::Ref* pSender);
-    
-    // implement the "static create()" method manually
-    CREATE_FUNC(HelloWorld);
-};
-
-#endif // __HELLOWORLD_SCENE_H__
-
+template <typename T>
+void createAndAddSprite(T* obj, const std::string& filename, float scale, float x, float y, int Zorder);
+template<typename T1,typename T2>
+void createAndAddLabel(T1* obj,T2&label ,const std::string& filename, float Pos_X, float Pos_Y, int Zorder);
+template<typename T1,typename T2>
+void modifyMenuItem(T1*obj,T2& MenuItem, float Pos_X, float Pos_Y, float scale, int Zorder);
 #ifndef  __SCENE_MENU_H__
 #define  __SCENE_MENU_H__
 class Scene_menu : public cocos2d::Scene
@@ -72,3 +57,34 @@ public:
 };
 
 #endif  __SCENE_12UP_H__
+
+#ifndef __SCENE_SETTING_H__
+#define __SCENE_SETTING_H__
+class Scene_Setting : public cocos2d::Scene
+{
+public:
+    static cocos2d::Scene* createScene();
+
+    virtual bool init();
+    void Back_to_last_scene(cocos2d::Ref* pSender);
+    CREATE_FUNC(Scene_Setting);
+};
+#endif  __SCENE_SETTING_H__
+
+#ifndef __SCENE_CHESSBOARD_H__
+#define __SCENE_CHESSBOARD_H__
+class Scene_ChessBoard : public cocos2d::Scene
+{
+public:
+    static cocos2d::Scene* createScene();
+
+    virtual bool init();
+
+    // a selector callback
+    void menuCloseCallback(cocos2d::Ref* pSender);
+
+    // implement the "static create()" method manually
+    CREATE_FUNC(Scene_ChessBoard);
+};
+
+#endif __SCENE_CHESSBOARD_H__

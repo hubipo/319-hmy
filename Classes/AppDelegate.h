@@ -22,44 +22,43 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef  _APP_DELEGATE_H_  // 防止头文件重复包含
-#define  _APP_DELEGATE_H_  // 定义预处理器宏
+#ifndef  _APP_DELEGATE_H_
+#define  _APP_DELEGATE_H_
 
-#include "cocos2d.h"  // 包含cocos2d头文件
+#include "cocos2d.h"
 
- /**
- @brief    The cocos2d Application.  // cocos2d应用程序
+/**
+@brief    The cocos2d Application.
 
- Private inheritance here hides part of interface from Director.  // 私有继承在这里隐藏了来自Director的部分接口
- */
-class  AppDelegate : private cocos2d::Application  // AppDelegate类，私有继承自cocos2d::Application
+Private inheritance here hides part of interface from Director.
+*/
+class  AppDelegate : private cocos2d::Application
 {
 public:
-    AppDelegate();  // 构造函数
-    virtual ~AppDelegate();  // 虚析构函数
+    AppDelegate();
+    virtual ~AppDelegate();
 
-    virtual void initGLContextAttrs();  // 初始化GL上下文属性
-
-    /**
-    @brief    Implement Director and Scene init code here.  // 在这里实现Director和Scene的初始化代码
-    @return true    Initialize success, app continue.  // 初始化成功，应用程序继续
-    @return false   Initialize failed, app terminate.  // 初始化失败，应用程序终止
-    */
-    virtual bool applicationDidFinishLaunching();  // 应用程序完成启动
+    virtual void initGLContextAttrs();
 
     /**
-    @brief  Called when the application moves to the background  // 当应用程序移动到后台时调用
-    @param  the pointer of the application  // 应用程序的指针
+    @brief    Implement Director and Scene init code here.
+    @return true    Initialize success, app continue.
+    @return false   Initialize failed, app terminate.
     */
-    virtual void applicationDidEnterBackground();  // 应用程序进入后台
+    virtual bool applicationDidFinishLaunching();
 
     /**
-    @brief  Called when the application reenters the foreground  // 当应用程序重新进入前台时调用
-    @param  the pointer of the application  // 应用程序的指针
+    @brief  Called when the application moves to the background
+    @param  the pointer of the application
     */
-    virtual void applicationWillEnterForeground();  // 应用程序将进入前台
+    virtual void applicationDidEnterBackground();
+
+    /**
+    @brief  Called when the application reenters the foreground
+    @param  the pointer of the application
+    */
+    virtual void applicationWillEnterForeground();
 };
 
-#endif // _APP_DELEGATE_H_  // 结束防止头文件重复包含的预处理器宏```
-
+#endif // _APP_DELEGATE_H_
 

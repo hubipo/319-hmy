@@ -28,6 +28,10 @@ template<typename T1,typename T2>
 void createAndAddLabel(T1* obj,T2&label ,const std::string& filename, float Pos_X, float Pos_Y, int Zorder);
 template<typename T1,typename T2>
 void modifyMenuItem(T1*obj,T2& MenuItem, float Pos_X, float Pos_Y, float scale, int Zorder);
+template<typename T1,typename T2>
+void modifySlider(T1*obj,T2& slider, std::string unselected, std::string selected, std::string normal, std::string pressed, std::string disabled, float Pos_X, float Pos_Y, int maxPercent, int curPercent);
+template<typename T1, typename T2>
+void modifyCheckBox(T1* obj, T2& checkbox, bool selected, float Pos_X, float Pos_Y, float scale);
 #ifndef  __SCENE_MENU_H__
 #define  __SCENE_MENU_H__
 class Scene_menu : public cocos2d::Scene
@@ -66,7 +70,8 @@ public:
     static cocos2d::Scene* createScene();
 
     virtual bool init();
-    void Back_to_last_scene(cocos2d::Ref* pSender);
+    void Back_To_Last_Scene(cocos2d::Ref* pSender);
+    void End_The_Game(Ref* pSender);
     CREATE_FUNC(Scene_Setting);
 };
 #endif  __SCENE_SETTING_H__

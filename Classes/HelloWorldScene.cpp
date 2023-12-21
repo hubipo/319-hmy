@@ -73,6 +73,27 @@ void modifyMenuItem(T1*obj,T2& MenuItem, float Pos_X, float Pos_Y, float scale, 
     menu->setPosition(Vec2::ZERO);
     obj->addChild(menu, Zorder);
 }
+//复选框
+template<typename T1,typename T2>
+void modifyCheckBox(T1*obj,T2&checkbox,bool selected,float Pos_X,float Pos_Y,float scale)
+{
+    checkbox->setScale(scale);
+    checkbox->setPosition(Vec2(Pos_X,Pos_Y));
+    checkbox->setSelected(selected);
+    obj->addChild(checkbox);
+}
+//进度条
+template<typename T1,typename T2>
+void modifySlider(T1*obj,T2&slider,std::string unselected,std::string selected,std::string normal,std::string pressed,std::string disabled,float Pos_X,float Pos_Y ,int maxPercent,int curPercent)
+{
+    slider->loadBarTexture(unselected);;
+    slider->loadSlidBallTextures(normal, pressed, disabled);
+    slider->loadProgressBarTexture(selected);
+    slider->setPosition(Vec2(Pos_X,Pos_Y));
+    slider->setMaxPercent(maxPercent);
+    slider->setPercent(curPercent);
+    obj->addChild(slider);
+}
 /***********************/
 /*全局变量*/
 int audio;//背景音
@@ -80,8 +101,6 @@ int audio;//背景音
 
 /***********************/
 USING_NS_CC;
-
-// Print useful error message instead of segfaulting when files are not there.
 static void problemLoading(const char* filename)
 {
     printf("Error while loading: %s\n", filename);
@@ -137,7 +156,6 @@ void  Scene_menu::menuSETTINGS(Ref* pSender)
 {
     //需要跳到settings中
     auto SETTINGS = Scene_Setting::createScene();
-    //Director::getInstance()->replaceScene(SETTINGS);
     Director::getInstance()->pushScene(TransitionCrossFade::create(1, SETTINGS));
 }
 void Scene_menu::menu12up(Ref* pSender)
@@ -146,7 +164,7 @@ void Scene_menu::menu12up(Ref* pSender)
     Director::getInstance()->pushScene(TransitionCrossFade::create(1, scene_12up));
 }
 /**********/
-/*12+*/
+//Scene_12up
 /**********/
 Scene* Scene_12up::createScene()
 {
@@ -164,27 +182,12 @@ bool Scene_12up::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     /********/
     auto Scene_12up = MenuItemImage::create("12up.png", "12up.png",CC_CALLBACK_1(Scene_12up::CLOSE, this));
-    Scene_12up->setScale(2.0f);
-    if (Scene_12up == nullptr || Scene_12up->getContentSize().width <= 0 || Scene_12up->getContentSize().height <= 0)
-    {
-        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
-    }
-    else
-    {
-        float x = origin.x + visibleSize.width / 2;
-        float y = origin.y + visibleSize.height / 2;
-        Scene_12up->setPosition(Vec2(x, y));
-    }
-    auto Menu_12up = Menu::create(Scene_12up, nullptr);
-    Menu_12up->setPosition(Vec2::ZERO);
-    this->addChild(Menu_12up, 1);
+    modifyMenuItem(this, Scene_12up, origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2, 2.0f, 1);
     return true;
 }
 void Scene_12up::CLOSE(Ref* pSender)
 { 
     Director::getInstance()->popScene();
-    //auto scene = Scene_menu::create();
-    //Director::getInstance()->replaceScene(scene);
 }
 /********************************/
 //Scene_Setting
@@ -193,7 +196,6 @@ Scene* Scene_Setting::createScene()
 {
     return Scene_Setting::create();
 }
-
 bool Scene_Setting::init()
 {
     if (!Scene::init())
@@ -203,12 +205,87 @@ bool Scene_Setting::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     
+    
     Label* Sound;
-    createAndAddLabel(this, Sound, "Sound", origin.x + visibleSize.width/3.0, origin.y + visibleSize.height/3.0, 1);
+    createAndAddLabel(this, Sound, "Sound", origin.x + visibleSize.width/3.0, origin.y + visibleSize.height*7.5/10.0, 1);
     Sound->enableShadow();
     Sound->setColor(Color3B::RED);
-    createAndAddSprite(this, "ALLWHITE.png", 3.0f, origin.x + visibleSize.width / 2, origin.y + visibleSize.height, 0);
+    
+    Label* CLOSE;
+    createAndAddLabel(this, CLOSE, "END GAME", origin.x + visibleSize.width * 8.0 / 10, origin.y + visibleSize.height * 9.2 / 10.0, 1);
+    CLOSE->setScale(0.55f);
+    CLOSE->setColor(Color3B(0,191,255));
+    CLOSE->enableOutline(Color4B::BLACK,1);
+
+    createAndAddSprite(this, "Setting_background.png", 2.0f, origin.x + visibleSize.width / 2, origin.y + visibleSize.height/2, 0);
+    auto BACK = MenuItemImage::create("Back.png", "Back.png", CC_CALLBACK_1(Scene_Setting::Back_To_Last_Scene, this));
+    modifyMenuItem(this, BACK, origin.x + visibleSize.width / 10, origin.y + visibleSize.height * 9.2 / 10.0, 0.7f, 1);
+    auto close = MenuItemImage::create("CloseNormal.png", "CloseSelected.png", CC_CALLBACK_1(Scene_Setting::End_The_Game, this));
+    modifyMenuItem(this, close, origin.x + visibleSize.width * 9 / 10, origin.y + visibleSize.height * 9.2 / 10.0, 3.0f, 1);
+    //创建一个复选框
+    auto checkbox = ui::CheckBox::create("Sound_1.png",
+        "Sound_2.png",
+        "Sound_4.png",
+        "Sound_4.png",
+        "Sound_4.png");
+    modifyCheckBox(this, checkbox, true, origin.x + visibleSize.width * 0.7 / 3.0, origin.y + visibleSize.height * 7.5 / 10.0, 1.8f);
+    checkbox->addEventListener([&](Ref* sender, ui::CheckBox::EventType type) 
+        {
+        switch (type)
+        {
+        case ui::CheckBox::EventType::UNSELECTED:
+                AudioEngine::pause(audio);
+                break;
+        case ui::CheckBox::EventType::SELECTED:      
+                // 播放音乐
+                AudioEngine::resume(audio);
+                break;
+        default:
+            break;
+        }
+        });
+    // 创建一个滑动条
+    auto slider = ui::Slider::create();
+    modifySlider(this,slider, "huadongtiao_1.png", "hongtiao.png", "huadongtiao_3.png", "huadongtiao_5.png"
+        , "huadongtiao_4", origin.x + visibleSize.width * 1.5 / 3.0, origin.y + visibleSize.height * 7.5 / 10.0, 100, 50);
+    float percent = 50.0;
+    float volume = 0.5f;
+    // 设置音乐的音量大小
+    AudioEngine::setVolume(audio, volume);
+
+    Label* DISPLAY_V;
+    std::string text = std::to_string(static_cast<int>(percent));
+    createAndAddLabel(this, DISPLAY_V, text,
+        origin.x + visibleSize.width * 2.0 / 3.0,
+        origin.y + visibleSize.height * 7.5 / 10.0, 1);
+  
+    DISPLAY_V->setColor(Color3B::RED);
+    DISPLAY_V->enableShadow();
+    slider->addEventListener([=](Ref* sender, ui::Slider::EventType type) 
+        {
+        if (type ==ui::Slider::EventType::ON_PERCENTAGE_CHANGED) 
+        {
+            // 当滑动条的值发生变化时，执行相应的操作
+            float percent = slider->getPercent();
+            // 计算音量大小
+            float volume = percent / 100.0f;
+            // 设置音乐的音量大小
+            AudioEngine::setVolume(audio, volume);
+           
+            // 将数值转换为字符串
+            std::string text = std::to_string(static_cast<int>(percent));
+            DISPLAY_V->setString(text);
+        }
+    });
     return true;
+}
+void Scene_Setting::Back_To_Last_Scene(Ref* pSender)
+{
+   Director::getInstance()->popScene();
+}
+void Scene_Setting::End_The_Game(Ref* pSender)
+{
+    Director::getInstance()->end();
 }
 /********************************/
 //Scene_ChessBoard
@@ -241,3 +318,4 @@ void Scene_ChessBoard::menuCloseCallback(Ref* pSender)
 {
     Director::getInstance()->end();
 }
+/********************************/

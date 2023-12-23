@@ -22,6 +22,7 @@
  THE SOFTWARE.
  ****************************************************************************/
 #include "cocos2d.h"
+#include "Player.h"
 template <typename T>
 void createAndAddSprite(T* obj, const std::string& filename, float scale, float x, float y, int Zorder);
 template<typename T1,typename T2>
@@ -90,6 +91,8 @@ public:
 
     // implement the "static create()" method manually
     CREATE_FUNC(Scene_ChessBoard);
+private:
+    Player* my_player;
 };
 
 #endif __SCENE_CHESSBOARD_H__

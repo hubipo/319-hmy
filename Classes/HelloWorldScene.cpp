@@ -25,6 +25,7 @@
 #include "HelloWorldScene.h"
 #include "AudioEngine.h"
 #include "ui/CocosGUI.h"
+
 /**************************/
 /*模板函数*/
 //添加精灵
@@ -310,7 +311,17 @@ bool Scene_ChessBoard::init()
     Label* label;
     createAndAddLabel(this, label, "ChessBoard", origin.x + visibleSize.width / 2, origin.y + visibleSize.height * 9 / 10, 1);
    
-    createAndAddSprite(this, "qipan_1.jpg", 2.0f, visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y, 0);
+    createAndAddSprite(this, "board1.png", 2.0f, visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y, 0);
+    createAndAddSprite(this, "cardboard.jpg", 0.5f, visibleSize.width / 2 + origin.x, origin.y+40, 0);//卡牌栏
+    //小小英雄
+    my_player = Player::create();
+    my_player->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2));
+    this->addChild(my_player, 0);
+    //如果受到攻击小小英雄就掉血
+
+    if (my_player->isAttacked) {
+        my_player->takeDamage();
+    }
 
     return true;
 }

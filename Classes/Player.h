@@ -1,3 +1,4 @@
+#pragma once
 /****************************************************************************
  Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
@@ -24,7 +25,8 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
  //constexpr int MY_HP = 100;
-
+#define MAX_HP 100.0f
+#define SPEAD 200.0f
 #include"cocos2d.h"
 
 //template<typename T>
@@ -33,7 +35,10 @@
 class Player : public cocos2d::Sprite
 {
 public:
-    static cocos2d::Sprite* createPlayer();
+   // static cocos2d::Sprite* createPlayer();
+    Player() = default;
+    ~Player() = default;
+
     virtual bool init();
 
     void onMouseDown(cocos2d::EventMouse* event);
@@ -45,9 +50,11 @@ public:
     CREATE_FUNC(Player);
 
     bool isMoving;
+
+    bool isAttacked;
 private:
     cocos2d::Sprite* heroSprite;
-    float moveSpeed = 200.0f; // 小小英雄的移动速度
+    float moveSpeed; // 小小英雄的移动速度
 
     cocos2d::ProgressTimer* bloodBar;
     float currentHealth;//小小英雄当前的血量

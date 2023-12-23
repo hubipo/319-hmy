@@ -19,25 +19,28 @@ void createHealthBar(T* obj) {
     currentHealth = 100.0f;
     obj->addChild(bloodBar, 0);
 }*/
-Sprite* Player::createPlayer()
+/*Sprite* Player::createPlayer()
 {
     return Player::create();
-}
+    }*/
 bool Player::init()
 {
     if (!Sprite::init()) {
         return false;
     }//调用父类init，只写init初始化
-
+    //Vec2 origin = Director::getInstance()->getVisibleOrigin();
     //初始化
     isMoving = false;
+    isAttacked = false;
+    moveSpeed = SPEAD; // 小小英雄的移动速度
+    currentHealth = MAX_HP;
     //获取屏幕
     //cocos2d::Size screenSize = cocos2d::Director::getInstance()->getVisibleSize();
     //cocos2d::Vec2 spritePosition(screenSize.width / 2, screenSize.height / 2);
     Size visibleSize = Director::getInstance()->getVisibleSize();
     // 创建英雄精灵
-    auto heroSprite = cocos2d::Sprite::create("menu_1.png");
-    heroSprite->setScale(0.5f);
+    auto heroSprite = cocos2d::Sprite::create("littleplayer.png");
+    heroSprite->setScale(0.3f);
     heroSprite->setAnchorPoint(Vec2(0.5f, 0.5f));
     heroSprite->setPosition(Vec2(0,0));
     this->addChild(heroSprite, 0);
@@ -69,7 +72,7 @@ bool Player::init()
 
     return true;
 }
-void Player::createHealthBar(Sprite* heroSprite) {
+void Player::createHealthBar(Sprite*heroSprite) {
     auto bdSprite = Sprite::create("blood_bd.png");
     bdSprite->setPosition(heroSprite->getAnchorPoint() + Vec2(12, 25));
     bdSprite->setScale(0.5);
@@ -83,7 +86,7 @@ void Player::createHealthBar(Sprite* heroSprite) {
     bloodBar->setBarChangeRate(Vec2(1, 0)); // 设置进度条变化率
     bloodBar->setPosition(heroSprite->getAnchorPoint() + Vec2(12, 25));
     bloodBar->setPercentage(100); // 设置血条初始值
-    currentHealth = 100.0f;//
+    //currentHealth = 100.0f;//
     this->addChild(bloodBar, 0);
 }
 /*
@@ -152,15 +155,19 @@ void Player::onMouseDown(cocos2d::EventMouse* event) {
     }
 }
 void Player::takeDamage() {
-
+    if (!bloodBar) {
+        return;
+    }
     float damageAmount = 20.0f; // 受到的伤害值
     currentHealth -= damageAmount;
 
     if (currentHealth < 0.0f) {
         currentHealth = 0.0f;
     }
-
-    float healthPercentage = currentHealth;
+    /*
+    * 如果血量为零，英雄图片改为死亡图片
+    */
+    float healthPercentage = currentHealth/MAX_HP;
     bloodBar->setPercentage(healthPercentage);//将血量减少显示
 
 }

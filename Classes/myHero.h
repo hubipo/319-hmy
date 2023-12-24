@@ -2,7 +2,10 @@
 #ifndef _HERO_
 #define _HERO_
 
-#include"Equipment.h"
+//#include"Equipment.h"
+
+#include"HelloWorldScene.h"
+
 
 #ifndef __COCOS__
 #define __COCOS__
@@ -39,7 +42,7 @@ public:
 
 
 	//这个函数是用来设置英雄的属性的，是在创建的时候就设置好的,具体的图像还要调sprite里面的create函数
-	virtual Hero* CreateHero() = 0;
+	//virtual Hero* CreateHero() = 0;
 
 	//受到伤害，想法是要减血量，然后英雄整体变红一下
 	void getAttack(int iattackValue);
@@ -60,7 +63,7 @@ public:
 	//英雄加装备之后，本身的属性的一些变化调用这个函数
 	//这个函数的想法是引入一个形参是装备的对象，然后用装备里面的数值来直接调整英雄的数值
 	//返回值=1成功，返回值=0失败
-	bool AddEquipment(Equipment* iequipment);
+	//bool AddEquipment(Equipment* iequipment);
 
 	//这个函数是用来搜索最近的敌人的位置的
 	Hero* findNearestEnemy();
@@ -68,6 +71,19 @@ public:
 
 	// 计算当前英雄和另一个英雄之间的距离
 	float calculateDistance(Hero* hero) const;
+
+};
+
+
+
+class Soldier :public Hero
+{
+public:
+	static bool heroCreated;
+
+	static Soldier* CreateHero(Vec2 iVec,float iSize);
+	static void createHeroAtMousePos(Event* event);
+	void UniqueSkill();
 
 };
 

@@ -1,4 +1,4 @@
-#include "Hero.h"
+#include "myHero.h"
 #include"HelloWorldScene.h"
 #include"AppDelegate.h"
 
@@ -74,11 +74,10 @@ Hero* Hero::findNearestEnemy() {
 
     // 假设enemies是敌方英雄列表
     Hero* nearestEnemy = nullptr;
-    float minDistance = std::numeric_limits<float>::max();  // 初始化为一个较大的值
+    constexpr float minDistance = std::numeric_limits<float>::max();  // 初始化为一个较大的值
 
 
-
-    for (auto enemy : _enemies) {
+    /*for (auto enemy : _enemies) {
         // 计算与当前敌人的距离
         float distance = calculateDistance(enemy);
 
@@ -86,10 +85,12 @@ Hero* Hero::findNearestEnemy() {
             minDistance = distance;
             nearestEnemy = enemy;
         }
-    }
+    }*/
+    
 
     return nearestEnemy;
 }
+
 
 
 // 计算当前英雄和另一个英雄之间的距离
@@ -124,8 +125,7 @@ void Hero::HeroMove()
     }
 }
 
-
-//英雄加装备之后，本身的属性的一些变化调用这个函数
+/*//英雄加装备之后，本身的属性的一些变化调用这个函数
     //这个函数的想法是引入一个形参是装备的对象，然后用装备里面的数值来直接调整英雄的数值
 bool Hero::AddEquipment(Equipment* iequipment) {
     if (this->equipmentNum == 3)
@@ -139,8 +139,65 @@ bool Hero::AddEquipment(Equipment* iequipment) {
     this->strike += iequipment->criticalRate;
     this->equipmentNum++;
     return 1;
+}*/
+
+
+void Soldier::UniqueSkill()
+{
+
 }
 
+Soldier* Soldier::CreateHero(Vec2 iVec, float iSize)
+{
+    // 创建一个Soldier对象
+    Soldier* soldier = new Soldier;
+
+    // 创建一个Sprite对象，并设置其纹理为hero.png
+    Sprite* sprite = Sprite::create("Soldier.png");
+
+    // 设置Sprite的位置
+    sprite->setPosition(iVec);
+
+    // 设置Sprite的缩放比例
+    sprite->setScale(iSize);
+
+    // 将Sprite添加到Soldier对象中
+    soldier->addChild(sprite);
+
+    // 返回Soldier对象的指针
+    return soldier;
+}
+
+bool Soldier::heroCreated = false;
+
+void Soldier:: createHeroAtMousePos(Event* event)
+{
+    if (!heroCreated)
+    {
+        EventMouse* e = dynamic_cast<EventMouse*>(event);
+        if (e)
+        {
+            // 获取鼠标点击的位置
+            Vec2 clickPos = e->getLocationInView();
+            clickPos = Director::getInstance()->convertToGL(clickPos);
+
+            // 获取屏幕可见区域大小
+            Size visibleSize = Director::getInstance()->getVisibleSize();
+
+            // 计算上下对称位置
+            float symmetricalY = visibleSize.height - clickPos.y;
+
+            // 创建英雄对象
+            Vec2 heroPos = Vec2(clickPos.x, symmetricalY);
+            float heroSize = 0.3f;
+            Soldier* hero = CreateHero(heroPos, heroSize);
+            // 将英雄添加到当前场景中
+            auto scene = Director::getInstance()->getRunningScene();
+            scene->addChild(hero);
+            hero->heroCreated = true;
+        }
+    }
+}
 
 
 

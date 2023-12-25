@@ -301,15 +301,26 @@ bool Scene_ChessBoard::init()
     {
         return false;
     }
-
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+    //计时
+    remainingTime = 10.0f;
+    battleTime = 10.0f; // 对战时间为1分钟
+    this->schedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateTimer), 1.0f);
+    // 创建显示剩余时间的Label
+    TimeLabel = Label::createWithSystemFont("", "Arial", 24);
+    TimeLabel->setPosition(Vec2(origin.x + visibleSize.width*1/10.0, origin.y+visibleSize.height*9/10.0 ));
+    TimeLabel->setScale(0.5f);
+    this->addChild(TimeLabel,2);
+
+    ///////
 
     auto closeItem = MenuItemImage::create("CloseNormal.png", "CloseSelected.png", CC_CALLBACK_1(Scene_ChessBoard::menuCloseCallback, this));
     modifyMenuItem(this, closeItem, origin.x + visibleSize.width - closeItem->getContentSize().width / 2, origin.y + closeItem->getContentSize().height / 2, 1.0f, 1);
 
-    Label* label;
-    createAndAddLabel(this, label, "ChessBoard", origin.x + visibleSize.width / 2, origin.y + visibleSize.height * 9 / 10, 1);
+    //Label* label;
+    //createAndAddLabel(this, label, "ChessBoard", origin.x + visibleSize.width / 2, origin.y + visibleSize.height * 9 / 10, 1);
 
     board = Sprite::create("board1.png");
     board->setScale(2.0f);
@@ -337,8 +348,8 @@ bool Scene_ChessBoard::init()
     auto listener = EventListenerMouse::create();
     listener->onMouseDown = CC_CALLBACK_1(Scene_ChessBoard::onMouseDown_1, this);
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
-    createAndAddSprite(this, "menu_1.png", 0.7f, visibleSize.width / 2 + origin.x, origin.y + 40, 1);
-    createAndAddSprite(this, "menu_2.png", 0.7f, visibleSize.width / 3 + origin.x, origin.y + 40, 1);
+    createAndAddSprite(this, "menu_1.png", 0.5f, visibleSize.width / 2 + origin.x, origin.y + 40, 1);
+    createAndAddSprite(this, "menu_2.png", 0.5f, visibleSize.width / 3 + origin.x, origin.y + 40, 1);
 
     return true;
 }
@@ -348,31 +359,34 @@ void Scene_ChessBoard::onMouseDown_1(cocos2d::EventMouse* event)
     Vec2 clickPosition = Vec2(mouseEvent->getCursorX(), mouseEvent->getCursorY());
     if (mouseEvent->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_LEFT)
     {
-        // 检查鼠标点击位置是否在图片上
-        Sprite* newSelectedSprite = getSelectedSprite(clickPosition);
-
-        if (newSelectedSprite)
+        if (remainingTime > 0.0f)
         {
-            // 如果之前已经选中了一个精灵，则取消选中状态
-            if (selectedSprite)
+            // 检查鼠标点击位置是否在图片上
+            Sprite* newSelectedSprite = getSelectedSprite(clickPosition);
+
+            if (newSelectedSprite)
             {
-                // 取消选中状态的处理代码
-                // ...
+                // 如果之前已经选中了一个精灵，则取消选中状态
+                if (selectedSprite)
+                {
+                    // 取消选中状态的处理代码
+                    // ...
+                }
+
+                // 更新选中的精灵
+                selectedSprite = newSelectedSprite;
+                CCLOG("Selected the sprite");
+                isSelected = 1;
             }
-
-            // 更新选中的精灵
-            selectedSprite = newSelectedSprite;
-            CCLOG("Selected the sprite");
-            isSelected = 1;
-        }
-        else
-        {
-            // 移动图片到鼠标点击位置
-            if (selectedSprite && isSelected == 1)
+            else
             {
-                selectedSprite->setPosition(clickPosition);
-                CCLOG("Moved the sprite to (%f, %f)", clickPosition.x, clickPosition.y);
-                isSelected = 0;
+                // 移动图片到鼠标点击位置
+                if (selectedSprite && isSelected == 1)
+                {
+                    selectedSprite->setPosition(clickPosition);
+                    CCLOG("Moved the sprite to (%f, %f)", clickPosition.x, clickPosition.y);
+                    isSelected = 0;
+                }
             }
         }
     }
@@ -399,5 +413,59 @@ void Scene_ChessBoard::menuCloseCallback(Ref* pSender)
 void Scene_ChessBoard::CARD_CALLBACK(Ref* pSender)
 {
        
+}
+
+void Scene_ChessBoard::updateTimer(float dt)
+{
+    remainingTime -= dt;
+
+    if (remainingTime <= 0.0f)
+    {
+        // 开始对战
+        startBattle();
+    }
+    // 更新剩余时间Label的显示内容
+    int seconds = static_cast<int>(remainingTime);
+    TimeLabel->setString("remaining time: " + std::to_string(seconds) + "s");
+}
+void Scene_ChessBoard::startBattle()
+{
+    // 停止计时器
+    this->unschedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateTimer));
+
+    // 执行对战逻辑，例如播放音效、开始计分等
+    // ...
+
+    // 创建并运行对战计时器
+    this->schedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateBattleTimer), 1.0f);
+}
+void Scene_ChessBoard::updateBattleTimer(float dt)
+{
+    battleTime -= dt;
+
+    if (battleTime <= 0.0f)
+    {
+        // 对战时间结束
+        endBattle();
+    }
+    else
+    {
+        // 更新对战时间Label的显示内容
+        int seconds = static_cast<int>(battleTime);
+        TimeLabel->setString("battle time: " + std::to_string(seconds) + "s");
+    }
+}
+void Scene_ChessBoard::endBattle()
+{
+    // 停止对战计时器
+    this->unschedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateBattleTimer));
+
+    // 执行对战结束的逻辑，例如显示得分、播放结束动画等
+    // ...
+
+     // 重新开始计时器
+    remainingTime = 10.0f; // 重新设置剩余时间
+    battleTime = 10.0f; // 重新设置对战时间
+    this->schedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateTimer), 1.0f);
 }
 /********************************/

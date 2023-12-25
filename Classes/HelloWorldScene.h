@@ -90,7 +90,14 @@ public:
     void CARD_CALLBACK(Ref* pSender);
     void onMouseDown_1(cocos2d::EventMouse* event);
     cocos2d::Sprite*getSelectedSprite(const cocos2d::Vec2& clickPosition);
+    void updateTimer(float dt);
+    void startBattle();
+    void endBattle();
+    void updateBattleTimer(float dt);
 private:
+    float remainingTime;
+    float battleTime;
+    cocos2d::Label* TimeLabel;
     Player* my_player;
     cocos2d::Sprite* board;
     cocos2d::Sprite* selectedSprite;

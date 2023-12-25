@@ -94,6 +94,7 @@ public:
     void startBattle();
     void endBattle();
     void updateBattleTimer(float dt);
+   
 private:
     float remainingTime;
     float battleTime;
@@ -102,6 +103,18 @@ private:
     cocos2d::Sprite* board;
     cocos2d::Sprite* selectedSprite;
     bool isSelected;
+    cocos2d::Sprite* mouse_sprite;//当前鼠标点击的英雄的对象
+    //HeorType selected_hero_type;
+    /*
+    要满足上一个语句，就要在Hero类开头加上以下语句声明Hero中的各种子类，如“战士”“刺客”
+    enum class PlantType {
+	herotype_none = -1,//这个代表哪个类也没选中
+	SunFlower,// 太阳花
+	Peashooter,//豌豆射手
+	WallNut, //坚果
+	CherryBomb, //樱桃炸弹
+	Squash // 窝瓜
+};*/
     CREATE_FUNC(Scene_ChessBoard);
 };
 

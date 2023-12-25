@@ -47,17 +47,17 @@ public:
 
     void takeDamage();
 
-    CREATE_FUNC(Player);
-
     bool isMoving;
 
     bool isAttacked;
+    CREATE_FUNC(Player);
 private:
     cocos2d::Sprite* heroSprite;
     float moveSpeed; // 小小英雄的移动速度
 
     cocos2d::ProgressTimer* bloodBar;
     float currentHealth;//小小英雄当前的血量
+ 
 };
 /*
 class GameScene : public cocos2d::Scene {

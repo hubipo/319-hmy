@@ -118,39 +118,42 @@ void Player::onMouseDown(cocos2d::EventMouse* event) {
 void Player::onMouseDown(cocos2d::EventMouse* event) {
     auto mouseEvent = dynamic_cast<cocos2d::EventMouse*>(event);
     if (mouseEvent) {
-        //移动过程中不能读取鼠标，防止飞出屏幕
-        if (!isMoving) {
-            isMoving = true;
-            // 获取点击位置
-            cocos2d::Vec2 clickPos = mouseEvent->getLocationInView();
-            clickPos.y = cocos2d::Director::getInstance()->getVisibleSize().height - clickPos.y; // 反转Y轴坐标
-            clickPos = cocos2d::Director::getInstance()->convertToGL(clickPos);
+        //只右键才能移动小小英雄
+        if (mouseEvent->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_RIGHT) {
+            //移动过程中不能读取鼠标，防止飞出屏幕
+            if (!isMoving) {
+                isMoving = true;
+                // 获取点击位置
+                cocos2d::Vec2 clickPos = mouseEvent->getLocationInView();
+                clickPos.y = cocos2d::Director::getInstance()->getVisibleSize().height - clickPos.y; // 反转Y轴坐标
+                clickPos = cocos2d::Director::getInstance()->convertToGL(clickPos);
 
-            // 获取精灵的大小
-            cocos2d::Size spriteSize = this->getContentSize();
+                // 获取精灵的大小
+                cocos2d::Size spriteSize = this->getContentSize();
 
-            // 计算精灵可以移动的区域
-            cocos2d::Size screenSize = cocos2d::Director::getInstance()->getVisibleSize();
-            cocos2d::Rect moveRect = cocos2d::Rect(spriteSize.width / 2, spriteSize.height / 2, screenSize.width - spriteSize.width, screenSize.height - spriteSize.height);
+                // 计算精灵可以移动的区域
+                cocos2d::Size screenSize = cocos2d::Director::getInstance()->getVisibleSize();
+                cocos2d::Rect moveRect = cocos2d::Rect(spriteSize.width / 2, spriteSize.height / 2, screenSize.width - spriteSize.width, screenSize.height - spriteSize.height);
 
-            // 将目标位置限制在可移动区域内
-            cocos2d::Vec2 targetPos = clickPos.getClampPoint(moveRect.origin, moveRect.origin + moveRect.size);
+                // 将目标位置限制在可移动区域内
+                cocos2d::Vec2 targetPos = clickPos.getClampPoint(moveRect.origin, moveRect.origin + moveRect.size);
 
-            // 计算英雄需要移动的距离和时间
-            float distance = targetPos.distance(getPosition());
-            float duration = distance / moveSpeed;
-            // 创建移动动作
-            //auto moveAction = cocos2d::MoveTo::create(duration, targetPos);
-            auto moveAction = cocos2d::Sequence::create(
-                cocos2d::MoveTo::create(duration, targetPos),
-                cocos2d::CallFunc::create([this]() {
-                    // 移动完成后，将移动状态设为 false
-                    isMoving = false;
-                    }),
-                nullptr
-                        );
-            // 执行移动动作
-            runAction(moveAction);
+                // 计算英雄需要移动的距离和时间
+                float distance = targetPos.distance(getPosition());
+                float duration = distance / moveSpeed;
+                // 创建移动动作
+                //auto moveAction = cocos2d::MoveTo::create(duration, targetPos);
+                auto moveAction = cocos2d::Sequence::create(
+                    cocos2d::MoveTo::create(duration, targetPos),
+                    cocos2d::CallFunc::create([this]() {
+                        // 移动完成后，将移动状态设为 false
+                        isMoving = false;
+                        }),
+                    nullptr
+                            );
+                // 执行移动动作
+                runAction(moveAction);
+            }
         }
     }
 }

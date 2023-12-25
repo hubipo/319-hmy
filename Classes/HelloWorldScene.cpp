@@ -342,15 +342,108 @@ bool Scene_ChessBoard::init()
     if (my_player->isAttacked) {
         my_player->takeDamage();
     }
-
-    
-
+    /*
+    //*******************************从这里开始************************
     auto listener = EventListenerMouse::create();
     listener->onMouseDown = CC_CALLBACK_1(Scene_ChessBoard::onMouseDown_1, this);
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
     createAndAddSprite(this, "menu_1.png", 0.5f, visibleSize.width / 2 + origin.x, origin.y + 40, 1);
     createAndAddSprite(this, "menu_2.png", 0.5f, visibleSize.width / 3 + origin.x, origin.y + 40, 1);
+    /////创建鼠标监听事件，为移动卡牌做准备
+    auto listenermo = EventListenerTouchOneByOne::create();
+    listenermo->onTouchBegan = CC_CALLBACK_2(Scene_ChessBoard::onTouchBegan2, this);
+    listenermo->onTouchMoved = CC_CALLBACK_2(Scene_ChessBoard::onTouchMoved2, this);
+    listenermo->onTouchEnded = CC_CALLBACK_2(Scene_ChessBoard::onTouchEnded2, this);
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+    //棋盘图
+    //= Sprite::create("board1.png");
+    //创建卡牌框
+    auto card_bar_sprite = Sprite::create("Games/ChooserBackground.png");
+    card_bar_sprite->setPosition(Vec2(visibleSize.width / 2.0f - 160.0f, visibleSize.height / 2.0f + 120.0f));
+    card_bar_sprite->setScale(1.3f);
+    board->addChild(card_bar_sprite, 1);
 
+
+    //*****在卡牌框上创建相应的英雄卡片
+    /*（此处要随机产生两个英雄，而不是下面示例中的一次性产生）
+    Hero* hero1 = new Hero;
+    hero1->init();
+    然后用图片建立英雄1的对象，设置位置（位置是事先计算出来的卡牌槽的位置
+    this->addChild(这个英雄，2);
+    card_date是存储所有卡片的vector，创建卡片之后才要把这个卡片的对象push进去
+    */
+    /*代码如下********************************* |||||||||||||||||||||||||||||
+    HeroCard* card1 = new  HeroCard;    //sunflower card
+    card1->sprite_init("SunFlower", Vec2(135, 555));
+    this->addChild(card1->sprite, 2);
+    card_date.push_back(card1);
+
+    PeashooterCard* card2 = new PeashooterCard;   //peashooter card
+    card2->sprite_init("PeaShooter", Vec2(185, 555));
+    this->addChild(card2->sprite, 2);
+    card_date.push_back(card2);
+   /////////////////////////////////////////////////////
+
+    //坐标初始化开始
+    //auto visibleSize = Director::getInstance()->getVisibleSize();
+    //坐标初始化 
+    //计划九宫格
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            float ii = 0.15f * i + 0.15f, jj = 0.21f + j * 0.09f;//这里的坐标要通过在图上计算的实际数据修改
+            hero_position[i][j] = Vec2(visibleSize.width * jj, visibleSize.height * ii);//这是一个储存所有合法位置的数组
+        }
+    }
+    //下面这个函数要单列出去，暂时写在这里
+    bool GameScene::onTouchBegan(Touch * touch, Event * unused_event) {
+        //判断鼠标
+        for (auto& it : card_date) //遍历卡片槽中所有的卡片类型
+        {
+            if (mouse_sprite != nullptr) break;//如果当前鼠标选中了某个英雄卡片，那么不再允许选择卡片
+            double width_ = it->sprite->getContentSize().width / 2;
+            double height_ = it->sprite->getContentSize().height / 2;//一个卡片的长和宽
+            Vec2 card_positon = it->sprite->getPosition();//当前卡片槽中卡片的位置
+            auto offset_ = card_positon - touch_position;//用于计算鼠标是否点在这个卡片范围内
+            if ((fabs(offset_.x) <= width_) && (fabs(offset_.y) <= height_)) {
+                switch (it->card_type) {//判断是哪种英雄卡片
+                    case CardType::card_type_Hero1://如果是英雄1
+                    {
+                        Hero1* hero1 = new Hero1;
+                        mouse_sprite = hero1->run_plant_animation(it->sprite->getPosition());//这是给mouse_sprite这个临时的Sprite指针赋值
+                        //赋值到相应的被选中的英雄卡片，因为it在遍历存储英雄卡片的card_date数组，it指向的正是当前被选中的英雄卡片
+                        this->addChild(mouse_sprite, 1);
+                        selected_hero_type = HeroType::Warrior;//当前被选中的英雄类型,假设是武士
+                        break;
+                    }
+                    //etc....
+                    default: {
+                        break;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    //不需要中间卡片跟随鼠标走，所以点击完了直接在某个位置生成
+    void GameScene::onTouchEnded(Touch* touch, Event* unused_event) {
+        if (mouse_sprite != nullptr && seleteed_hero_type != HeroType::herotype_none) {//
+            int row_, col_;
+            if (plants_vs_zombies->judge_vec2_in_row_col(touch->getLocation(), row_, col_)) {//鼠标位置棋盘上，不能在装备栏等位置
+                //judge_vec2_in_row_col函数判断位置是否在棋盘上，并且对row_和col_赋值，让我们获取要安放棋子的标准位置
+                //将我们种植的一个粗略的范围变成确定的一个点
+                if (plants_vs_zombies->judge_plant(row_, col_) == false) {//plants_vs_zombies->judge_plant(row_, col_)数组为true表示这个地方已经有棋子
+                    //为false表示没放过棋子，可以继续安放棋子在这个格子
+                    plant_down(row_, col_, selete_plant_type);//放在这个位置
+                }
+            }
+            selete_plant_type = PlantType::plant_type_none;//安放棋子在棋盘上动作完成，已选的植物类型置为空
+        }
+        this->removeChild(mouse_sprite);//清理临时指针
+        mouse_sprite = nullptr;//临时指针指向空
+    }
+    //****************************到这里暂时结束，有一些小函数未列出**********************
+    */
     return true;
 }
 void Scene_ChessBoard::onMouseDown_1(cocos2d::EventMouse* event)

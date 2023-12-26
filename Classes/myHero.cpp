@@ -1,6 +1,7 @@
 #include "myHero.h"
 #include"HelloWorldScene.h"
 #include"AppDelegate.h"
+USING_NS_CC;
 
 void Hero::getAttack(int iattackValue)
 {
@@ -23,6 +24,7 @@ void Hero::Attack()
 {
     // 检测最近的敌人并进行攻击
     Hero* nearestEnemy = findNearestEnemy(); // 假设有一个函数用于找到最近的敌人
+    this->HeroMove();
     if (nearestEnemy)
     {
         nearestEnemy->getAttack(this->attackPower); // 攻击最近的敌人
@@ -68,31 +70,35 @@ void Hero::Death()
 }
 
 // 这个函数是用来搜索最近的敌人的位置的
-Hero* Hero::findNearestEnemy() {
-    // 这里可以根据具体的实现逻辑编写代码
-    // 比如遍历敌方英雄列表，计算距离，找到最近的敌人并返回指针
-
-    // 假设enemies是敌方英雄列表
-    Hero* nearestEnemy = nullptr;
-    constexpr float minDistance = std::numeric_limits<float>::max();  // 初始化为一个较大的值
+Hero* Hero::findNearestEnemy()
+{
+    float minDistance = -1;  // 记录最小距离
+    Hero* nearestEnemy = nullptr;  // 记录最近的敌人
 
 
-    /*for (auto enemy : _enemies) {
-        // 计算与当前敌人的距离
-        float distance = calculateDistance(enemy);
+    // 遍历场景中所有的英雄
+    for (auto hero : this->HerosInScene) {
+        if (hero == nullptr || hero == this)
+            continue;
 
-        if (distance < minDistance) {
+        // 判断是否为敌人，如果不是则跳过
+        /*if (hero->Flag == this->Flag) {
+            continue;
+        }*/
+        
+
+        // 计算当前英雄和其他英雄之间的距离
+        float distance = this->calculateDistance(hero);
+
+        // 如果是第一次寻找敌人或者当前敌人更近，则更新最小距离和最近的敌人
+        if (minDistance < 0 || distance < minDistance) {
             minDistance = distance;
-            nearestEnemy = enemy;
+            nearestEnemy = hero;
         }
-    }*/
-    
+    }
 
     return nearestEnemy;
 }
-
-
-
 // 计算当前英雄和另一个英雄之间的距离
 float Hero::calculateDistance(Hero* hero) const {
     float dx = this->getPositionX() - hero->getPositionX();
@@ -119,9 +125,17 @@ void Hero::HeroMove()
 
     // 判断当前英雄是否在攻击范围内，如果不在则向敌人移动
     if (minDistance > this->range) {
+
+        Vec2 Mid((this->getPosition().x + this->getPosition().x) / 2, 
+            (targetHero->getPosition().y + targetHero->getPosition().y) / 2);
+
         Vec2 targetPosition = targetHero->getPosition();
         // 向敌人移动
-        this->runAction(MoveTo::create(1.0f, targetPosition));
+        float duration = 2.0f; // 移动时间
+        auto moveAction = MoveTo::create(duration, Mid);
+        this->stopAllActions(); // 停止当前所有动作
+        this->runAction(moveAction);
+
     }
 }
 
@@ -141,10 +155,28 @@ bool Hero::AddEquipment(Equipment* iequipment) {
     return 1;
 }*/
 
+void Hero::moveTo(Vec2 destination)
+{
+    auto moveAction = MoveTo::create(2, destination);
+    this->runAction(moveAction);
+}
+
 
 void Soldier::UniqueSkill()
 {
+    this->attackPower += 10;
+    this->attackSpeed -= 0.2;
+    scheduleOnce([this](float dt) {
+        // 停止技能效果
+        stopUniqueSkill();
+        }, 3.0f, "unique_skill_timer");
+    unschedule("unique_skill_timer");
+}
 
+void Soldier::stopUniqueSkill()
+{
+    this->attackPower -= 10;
+    this->attackSpeed += 0.2;
 }
 
 Soldier* Soldier::CreateHero(Vec2 iVec, float iSize)
@@ -170,36 +202,39 @@ Soldier* Soldier::CreateHero(Vec2 iVec, float iSize)
 
 bool Soldier::heroCreated = false;
 
-void Soldier:: createHeroAtMousePos(Event* event)
+
+Soldier::Soldier()
 {
-    if (!heroCreated)
-    {
-        EventMouse* e = dynamic_cast<EventMouse*>(event);
-        if (e)
-        {
-            // 获取鼠标点击的位置
-            Vec2 clickPos = e->getLocationInView();
-            clickPos = Director::getInstance()->convertToGL(clickPos);
-
-            // 获取屏幕可见区域大小
-            Size visibleSize = Director::getInstance()->getVisibleSize();
-
-            // 计算上下对称位置
-            float symmetricalY = visibleSize.height - clickPos.y;
-
-            // 创建英雄对象
-            Vec2 heroPos = Vec2(clickPos.x, symmetricalY);
-            float heroSize = 0.3f;
-            Soldier* hero = CreateHero(heroPos, heroSize);
-            // 将英雄添加到当前场景中
-            auto scene = Director::getInstance()->getRunningScene();
-            scene->addChild(hero);
-            hero->heroCreated = true;
-        }
-    }
 }
 
 
+bool Soldier::init()
+{
+
+    if (!Sprite::init()) {
+        return false;
+    }
+    this->heroType = HeroType::Soldier;
+    this->name = "Soldier";
+    this->hp = 100;
+    this->times = 6;
+    this->armor = 5;
+    this->attackPower = 20;
+    this->attackSpeed = 0.7;
+    this->range = 20;
+    this->strike = 25;
+    this->level = 1;
+    this->fee = 1;
+    this->Flag = 0;
+
+    auto soldier = Sprite::create("Soldier.png");
+    soldier->setScale(0.3f);
+    soldier->setAnchorPoint(Vec2(0.5f, 0.5f));
+    soldier->setPosition(Vec2(0, 0));
+    this->addChild(soldier, 0);
+
+    return true;
+}
 
 
 

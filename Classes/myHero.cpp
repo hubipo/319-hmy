@@ -23,7 +23,7 @@ void Hero::getAttack(int iattackValue)
 void Hero::Attack()
 {
     // 检测最近的敌人并进行攻击
-    Hero* nearestEnemy = findNearestEnemy(); // 假设有一个函数用于找到最近的敌人
+    Hero* nearestEnemy = nullptr;//findNearestEnemy(); // 假设有一个函数用于找到最近的敌人
     this->HeroMove();
     if (nearestEnemy)
     {
@@ -46,7 +46,7 @@ void Hero::Attack()
     }
 }
 
-
+//????//死亡逻辑要记得修改
 void Hero::Death()
 {
     // 停止所有动作
@@ -69,22 +69,22 @@ void Hero::Death()
     // ...
 }
 
-// 这个函数是用来搜索最近的敌人的位置的
-Hero* Hero::findNearestEnemy()
+// 这个函数是用来搜索最近的英雄的位置的，返回1就是有，返回0就是没有
+bool Hero::findNearestHero()
 {
-    float minDistance = -1;  // 记录最小距离
-    Hero* nearestEnemy = nullptr;  // 记录最近的敌人
+    //float minDistance = -1;  // 记录最小距离
+    //Hero* nearestEnemy = nullptr;  // 记录最近的敌人
 
 
     // 遍历场景中所有的英雄
-    for (auto hero : this->HerosInScene) {
+    /*for (auto hero : this->HerosInScene) {
         if (hero == nullptr || hero == this)
             continue;
 
         // 判断是否为敌人，如果不是则跳过
         /*if (hero->Flag == this->Flag) {
             continue;
-        }*/
+        }
         
 
         // 计算当前英雄和其他英雄之间的距离
@@ -95,10 +95,24 @@ Hero* Hero::findNearestEnemy()
             minDistance = distance;
             nearestEnemy = hero;
         }
-    }
+    }*/
+    //float minDistance = -1;  // 记录最小距离
 
-    return nearestEnemy;
+    for (auto hero : this->HerosInScene)
+    {
+        if (hero != nullptr && hero != this)
+        {
+            // 计算当前英雄和其他英雄之间的距离
+            float distance = this->calculateDistance(hero);
+            if (distance < this->range)//??????///这里的range可能最后会被修改
+                return 1;
+        }
+    }
+    return 0;
 }
+
+
+
 // 计算当前英雄和另一个英雄之间的距离
 float Hero::calculateDistance(Hero* hero) const {
     float dx = this->getPositionX() - hero->getPositionX();
@@ -112,31 +126,69 @@ void Hero::HeroMove()
 {
     // 获取当前英雄位置
     Vec2 curPosition = this->getPosition();
-    float minDistance = FLT_MAX; // 初始化最小距离为无穷大
-    Hero* targetHero = nullptr; // 目标英雄指针
+    //float minDistance = FLT_MAX; // 初始化最小距离为无穷大
+    //Hero* targetHero = nullptr; // 目标英雄指针
 
     // 遍历所有敌方英雄，找到距离最近的敌人,_enemies是存储敌方英雄的数组
-    targetHero = findNearestEnemy();
+    
 
-    // 如果没有敌人存活则不执行移动操作
-    if (!targetHero) {
+    // 如果周围有英雄的话就不继续动，如果周围没有英雄的话就继续动
+    if (findNearestHero()) {
         return;
     }
 
-    // 判断当前英雄是否在攻击范围内，如果不在则向敌人移动
-    if (minDistance > this->range) {
+    //Vec2 targetPosition = targetHero->getPosition();
 
-        Vec2 Mid((this->getPosition().x + this->getPosition().x) / 2, 
-            (targetHero->getPosition().y + targetHero->getPosition().y) / 2);
+    // 向敌人移动
+    float duration = 2.0f; // 移动时间
+    // 获取窗口大小
+    Size winSize = Director::getInstance()->getWinSize();
 
-        Vec2 targetPosition = targetHero->getPosition();
-        // 向敌人移动
-        float duration = 2.0f; // 移动时间
-        auto moveAction = MoveTo::create(duration, Mid);
-        this->stopAllActions(); // 停止当前所有动作
-        this->runAction(moveAction);
+    // 计算中间位置
+    Vec2 centerPosition(winSize.width / 2, winSize.height / 2);
 
+
+    // 创建移动动作
+    auto moveToCenter = MoveTo::create(duration, centerPosition);
+
+    // 创建回调函数
+    auto checkCollision = CallFunc::create([this]() {
+        if (findNearestHero()) 
+        {
+            this->stopAllActions();
+            return;
+        }
+        /*        // 获取场景中所有英雄节点
+        auto heroList = this->getParent()->getChildren();
+    for (auto& hero : heroList) {
+        // 如果是当前英雄或者不是英雄节点，则跳过
+        if (hero == this || !hero->getName().compare("background")) {
+            continue;
+        }
+        // 计算当前英雄与周围英雄的距离
+        auto distance = this->getPosition().distance(hero->getPosition());
+        // 如果距离小于指定范围，则停止移动，并输出日志信息
+        if (distance < range) {
+            this->stopAllActions();
+            CCLOG("Hero stopped due to collision with another hero.");
+            return;
+        }
     }
+*/
+    });
+
+    // 创建序列动作
+    auto sequence = Sequence::create(moveToCenter, checkCollision, nullptr);
+
+    // 执行序列动作
+    this->runAction(sequence);
+
+    /*    // 执行序列动作
+    this->runAction(sequence);    auto moveAction = MoveTo::create(duration, Mid);
+    this->stopAllActions(); // 停止当前所有动作
+    this->runAction(moveAction);
+*/
+
 }
 
 /*//英雄加装备之后，本身的属性的一些变化调用这个函数
@@ -221,7 +273,7 @@ bool Soldier::init()
     this->armor = 5;
     this->attackPower = 20;
     this->attackSpeed = 0.7;
-    this->range = 20;
+    this->range = 50;
     this->strike = 25;
     this->level = 1;
     this->fee = 1;

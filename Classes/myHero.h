@@ -77,6 +77,8 @@ public:
 	//bool AddEquipment(Equipment* iequipment);
 
 	//这个函数是用来搜索最近的敌人的位置的
+	Hero* findNearestEnemy();
+
 	bool findNearestHero();
 
 	// 计算当前英雄和另一个英雄之间的距离
@@ -97,7 +99,10 @@ public:
 	static Soldier* CreateHero(Vec2 iVec,float iSize);
 	void UniqueSkill();
 	void stopUniqueSkill();
+	void update(float deltaTime);
 
 };
+
+
 
 #endif

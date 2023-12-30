@@ -25,6 +25,9 @@
 #include "Player.h"
 #include "network/HttpClient.h"
 #include "network/SocketIO.h"
+#include "myHero.h"
+#define BATTLETIME 60
+#define REMAININGTIME 30
 template <typename T>
 void createAndAddSprite(T* obj, const std::string& filename, float scale, float x, float y, int Zorder);
 template<typename T1, typename T2>
@@ -93,7 +96,7 @@ public:
     void menuCloseCallback(cocos2d::Ref* pSender);
     void CARD_CALLBACK(Ref* pSender);
     void onMouseDown_1(cocos2d::EventMouse* event);
-    cocos2d::Sprite*getSelectedSprite(const cocos2d::Vec2& clickPosition);
+    Soldier* getSelectedSoldier(const cocos2d::Vec2& clickPosition);
     void updateTimer(float dt);
     void startBattle();
     void endBattle();
@@ -102,21 +105,31 @@ public:
     void refreshSeat();
     void refreshcallback(Ref* pSender);
     bool isInside(cocos2d::Rect Pos);
-    cocos2d::Sprite* randomSprite();
+    cocos2d::Vec2 HeroPosInBoard(cocos2d::Vec2 clickPos);
+    cocos2d::Vec2 HeroPosInSeat(cocos2d::Vec2 clickPos);
+    Soldier* randomSprite();
+    Soldier* getSoldier(const cocos2d::Vec2& clickPosition);
+    std::vector< Hero*> HeroInScene;
+    void update(float deltaTime);
+
    
 private:
+    cocos2d::Rect boardRange;
     int Pos[8];
     //cocos2d::Vec2 storePos;
     cocos2d::Rect storeRange;
-    cocos2d::Sprite* store_1;
-    cocos2d::Sprite* store_2;
+    cocos2d::Rect seatRange;
+    cocos2d::Rect rubbishRange;
+    Soldier* store_1;
+    Soldier* store_2;
+    Soldier* selectedSprite;
     float remainingTime;
     float battleTime;
     cocos2d::Label* TimeLabel;
     Player* my_player;
     cocos2d::Sprite* STORE;
     cocos2d::Sprite* board;
-    cocos2d::Sprite* selectedSprite;
+    cocos2d::Sprite* rubbish_can;
     bool isSelected;
     CREATE_FUNC(Scene_ChessBoard);
 };

@@ -25,7 +25,7 @@
 #include "HelloWorldScene.h"
 #include "AudioEngine.h"
 #include "ui/CocosGUI.h"
-
+#include "myHero.h"
  /**************************/
  /*模板函数*/
  //添加精灵
@@ -359,8 +359,8 @@ bool Scene_ChessBoard::init()
         Pos[i] = 0;
     }
     //计时
-    remainingTime = 30.0f;
-    battleTime = 3.0f; // 对战时间为1分钟
+    remainingTime = REMAININGTIME;
+    battleTime = BATTLETIME; // 对战时间为1分钟
     this->schedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateTimer), 1.0f);
     // 创建显示剩余时间的Label
     createAndAddLabel(this, TimeLabel, "", origin.x + visibleSize.width * 1.3 / 10.0, origin.y + visibleSize.height * 9.7 / 10.0, 2);
@@ -400,15 +400,58 @@ bool Scene_ChessBoard::init()
         this->addChild(STORE, 0);
         storeRange.setRect(STORE->getPosition().x - STORE->getContentSize().width / 2, STORE->getPosition().y - STORE->getContentSize().height / 2, STORE->getContentSize().width, STORE->getContentSize().height);
     }
+    rubbish_can = Sprite::create("rubbish_can.png");
+    //STORE->setScale(0.1f);
+    if (rubbish_can == nullptr)
+    {
+        problemLoading("HelloWorld.png");
+    }
+    else {
+ 
+        rubbish_can->setPosition(Vec2(visibleSize.width * 0.2, visibleSize.height * 0.05));
+        rubbish_can->setAnchorPoint(Vec2(0, 0));
+        this->addChild(rubbish_can, 2);
+        rubbishRange.setRect(rubbish_can->getPosition().x - rubbish_can->getContentSize().width / 2, rubbish_can->getPosition().y - rubbish_can->getContentSize().height / 2, rubbish_can->getContentSize().width, rubbish_can->getContentSize().height);
+    }
     //storePos = Vec2(STORE->getPosition().x - STORE->getContentSize().width / 2, STORE->getPosition().y - STORE->getContentSize().height / 2);
     //createAndAddSprite(this, "board1.png", 2.0f, visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y, 0);
     //createAndAddSprite(this, "cardboard.jpg", 0.5f, visibleSize.width / 2 + origin.x, origin.y + 40, 0);//卡牌栏
+    
+    //英雄展示
+    auto soldier1 = Soldier::create();
+    soldier1->setPosition(Vec2(origin.x + visibleSize.width / 2 - 100, origin.y + visibleSize.height / 2 - 100));
+    this->addChild(soldier1, 0);
+
+    auto soldier2 = Soldier::create();
+    soldier2->setPosition(Vec2(origin.x + visibleSize.width / 2 + 100, origin.y + visibleSize.height / 2 + 100));
+    this->addChild(soldier2, 0);
+
+    this->HeroInScene.push_back(soldier1);
+    this->HeroInScene.push_back(soldier2);
+
+    soldier1->HerosInScene = this->HeroInScene;
+    soldier2->HerosInScene = this->HeroInScene;
+
+
+    scheduleUpdate();
+     
+     
+    
     //小小英雄
+
+   /* auto test = Sprite::create("test2.png");
+    test->setScale(1.0f);
+    test->setAnchorPoint(Vec2(0,0));
+    test->setPosition(Vec2(visibleSize.width * 0.357, visibleSize.height * 0.09));
+    this->addChild(test, 2);*/
     my_player = Player::create();
     my_player->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2));
     this->addChild(my_player, 2);
     //如果受到攻击小小英雄就掉血
 
+    boardRange.setRect(visibleSize.width * 0.357, visibleSize.height * 0.21, visibleSize.width * 0.2128, visibleSize.width * 0.4256);
+    seatRange.setRect(visibleSize.width * 0.357, visibleSize.height * 0.09, visibleSize.width * 0.055 * 8, visibleSize.width * 0.055);
+    
     if (my_player->isAttacked) {
         my_player->takeDamage();
     }
@@ -422,27 +465,54 @@ bool Scene_ChessBoard::init()
 
     return true;
 }
-Sprite* Scene_ChessBoard::randomSprite()
+cocos2d::Vec2 Scene_ChessBoard::HeroPosInSeat(cocos2d::Vec2 clickPos) 
+{
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 originPos = Vec2(visibleSize.width * 0.357, visibleSize.height * 0.12);
+    float gridSize = visibleSize.width * 0.0531;
+    float offsetX = clickPos.x - originPos.x;
+    int col = static_cast<int>(offsetX / gridSize);
+    float centerX = originPos.x + col * gridSize + gridSize / 2;
+    return Vec2(centerX, visibleSize.height * 0.12);
+}
+
+cocos2d::Vec2 Scene_ChessBoard::HeroPosInBoard(cocos2d::Vec2 clickPos)
+{
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 originPos = Vec2(visibleSize.width * 0.357, visibleSize.height * 0.21);
+    float gridSize = visibleSize.width * 0.0531;
+    float offsetX = clickPos.x - originPos.x;
+    float offsetY = clickPos.y - originPos.y;
+
+    int col = static_cast<int>(offsetX / gridSize);
+    int row = static_cast<int>(offsetY / gridSize);
+
+    float centerX = originPos.x + col * gridSize + gridSize / 2;
+    float centerY = originPos.y + row * gridSize + gridSize / 2;
+
+    return Vec2(centerX, centerY);
+}
+Soldier* Scene_ChessBoard::randomSprite()
 {
     int x;
-    cocos2d::Sprite* store_sprite;
+    Soldier* store_sprite;
     x = random() % 3;
     if (x == 0)
     {
-        store_sprite = Sprite::create("hero_10086.png");
-        store_sprite->setScale(0.3f);
+        //创建soldier
+        store_sprite = Soldier::create();
         return store_sprite;
     }
     if (x == 1)
     {
-        store_sprite = Sprite::create("hero_10010.png");
-        store_sprite->setScale(0.3f);
+        //创建其他英雄
+        store_sprite = Soldier::create();
         return store_sprite;
     }
     if (x == 2)
     {
-        store_sprite = Sprite::create("hero_911.png");
-        store_sprite->setScale(0.3f);
+        //创建其他英雄
+        store_sprite = Soldier::create();
         return store_sprite;
     }
 }
@@ -452,9 +522,9 @@ void Scene_ChessBoard::refreshcallback(Ref* pSender)
 }
 void Scene_ChessBoard::refreshStore()
 {
-    auto visibleSize = Director::getInstance()->getVisibleSize();
+    auto visibleSize = Director::getInstance()->getVisibleSize(); 
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    if (store_1!=nullptr&&storeRange.containsPoint(store_1->getPosition()))
+    if (store_1 != nullptr && storeRange.containsPoint(store_1->getPosition()))
         store_1->removeFromParent();
     if (store_2 != nullptr && storeRange.containsPoint(store_2->getPosition()))
         store_2->removeFromParent();
@@ -482,7 +552,7 @@ void Scene_ChessBoard::refreshSeat()
     for (int i = 0; i < 8; i++)
     {
         Pos[i] = 0;
-        Seats.setRect(visibleSize.width * 0.38 - store_1->getContentSize().width / 20 + visibleSize.width * 0.055 * i,
+        Seats.setRect(visibleSize.width * 0.38 - store_1->getContentSize().width / 20 + visibleSize.width * 0.054 * i,
             visibleSize.height * 0.12 - store_1->getContentSize().height / 20, store_1->getContentSize().width/10.0, store_1->getContentSize().height/10.0);
         if (isInside(Seats))
             Pos[i] = 1;
@@ -497,81 +567,136 @@ void Scene_ChessBoard::onMouseDown_1(cocos2d::EventMouse* event)
     if (mouseEvent->getMouseButton() == cocos2d::EventMouse::MouseButton::BUTTON_LEFT)
     {
         refreshSeat();
-        if (remainingTime > 0.0f)
+        // 检查鼠标点击位置是否在图片上
+        Soldier* newSelectedSprite = getSelectedSoldier(clickPosition);
+        if (storeRange.containsPoint(clickPosition) && newSelectedSprite)
         {
-           
-            // 检查鼠标点击位置是否在图片上
-            Sprite* newSelectedSprite = getSelectedSprite(clickPosition);
-           // if (clickPosition.x > visibleSize.width * 9 / 10.0 && clickPosition.x < visibleSize.width && clickPosition.y<origin.y + 270 && clickPosition.y > origin.y + 170 && newSelectedSprite)
-            if (storeRange.containsPoint(clickPosition) && newSelectedSprite)
+            for (unsigned int i = 0; i < 8; i++)
             {
-                
-                for (unsigned int i = 0; i < 8; i++)
+                if (Pos[i] == 0)
                 {
-                    if (Pos[i] == 0)
-                    {
-                        newSelectedSprite->setPosition(Vec2(visibleSize.width * 0.38+visibleSize.width*0.055*i, visibleSize.height * 0.12));
-                        newSelectedSprite->setScale(0.1f); 
-                        Pos[i] = 1;
-                        break;
-                    }
+                    newSelectedSprite->setPosition(Vec2(visibleSize.width * 0.38 + visibleSize.width * 0.054 * i, visibleSize.height * 0.12));
+                    newSelectedSprite->setScale(0.3f);
+                    Pos[i] = 1;
+                    break;
                 }
             }
-            else 
+        }
+        else  if (boardRange.containsPoint(clickPosition) && remainingTime > 0)
+        {
+            if (newSelectedSprite)
             {
-                if (newSelectedSprite)
+                // 如果之前已经选中了一个精灵，则取消选中状态
+                if (selectedSprite)
                 {
-                    // 如果之前已经选中了一个精灵，则取消选中状态
-                    if (selectedSprite)
-                    {
-                        // 取消选中状态的处理代码
-                        // ...
-                    }
-
-                    // 更新选中的精灵
-                    selectedSprite = newSelectedSprite;
-                    CCLOG("Selected the sprite");
-                    isSelected = 1;
+                    // 取消选中状态的处理代码
+                    // ...
                 }
-                else if(!storeRange.containsPoint(clickPosition) && selectedSprite)
-                {
-                    // 移动图片到鼠标点击位置
-                    if (selectedSprite && isSelected == 1)
-                    {
 
-                        selectedSprite->setPosition(clickPosition);
-                        CCLOG("Moved the sprite to (%f, %f)", clickPosition.x, clickPosition.y);
-                        isSelected = 0;
-                    }
+                // 更新选中的精灵
+                selectedSprite = newSelectedSprite;
+                CCLOG("Selected the sprite");
+                isSelected = 1;
+            }
+            else if (!storeRange.containsPoint(clickPosition) && selectedSprite)
+            {
+                // 移动图片到鼠标点击位置
+                if (selectedSprite && isSelected == 1)
+                {
+                   // selectedSprite->setPosition(HeroPosInBoard(clickPosition));
+                    auto moveAction = MoveTo::create(0.3f, Vec2(HeroPosInBoard(clickPosition)));
+                    auto actionSequence = Sequence::create(moveAction, nullptr);
+                    selectedSprite->runAction(actionSequence);
+                    CCLOG("Moved the sprite to (%f, %f)", clickPosition.x, clickPosition.y);
+                    isSelected = 0;
+                }
+            }
+        }
+        else  if (seatRange.containsPoint(clickPosition))
+        {
+            if (newSelectedSprite)
+            {
+                // 如果之前已经选中了一个精灵，则取消选中状态
+                if (selectedSprite)
+                {
+                    // 取消选中状态的处理代码
+                    // ...
+                }
+
+                // 更新选中的精灵
+                selectedSprite = newSelectedSprite;
+                CCLOG("Selected the sprite");
+                isSelected = 1;
+            }
+            else if (!storeRange.containsPoint(clickPosition) && selectedSprite)
+            {
+                // 移动图片到鼠标点击位置
+                if (selectedSprite && isSelected == 1)
+                {
+                    //selectedSprite->setPosition(HeroPosInSeat(clickPosition));
+                    auto moveAction = MoveTo::create(0.3f, Vec2(HeroPosInSeat(clickPosition)));
+                    auto actionSequence = Sequence::create(moveAction, nullptr);
+                    selectedSprite->runAction(actionSequence);
+                    CCLOG("Moved the sprite to (%f, %f)", clickPosition.x, clickPosition.y);
+                    isSelected = 0;
+                }
+            }
+        }
+        else if (rubbishRange.containsPoint(clickPosition) && selectedSprite)
+        {
+            if (newSelectedSprite)
+            {
+                // 如果之前已经选中了一个精灵，则取消选中状态
+                if (selectedSprite)
+                {
+                    // 取消选中状态的处理代码
+                    // ...
+                }
+
+                // 更新选中的精灵
+                selectedSprite = newSelectedSprite;
+                CCLOG("Selected the sprite");
+                isSelected = 1;
+            }
+            else if (!storeRange.containsPoint(clickPosition) && selectedSprite)
+            {
+                // 移动图片到鼠标点击位置
+                if (selectedSprite && isSelected == 1)
+                {
+                    selectedSprite->setPosition(HeroPosInSeat(clickPosition));
+                    if (rubbishRange.containsPoint(store_1->getPosition()))
+                        store_1->removeFromParent();
+                    else if (rubbishRange.containsPoint(store_2->getPosition()))
+                        store_2->removeFromParent();
+                    else if(rubbishRange.containsPoint(selectedSprite->getPosition())&& selectedSprite!=store_1 && selectedSprite != store_2)
+                        selectedSprite->removeFromParent();
+                    CCLOG("Moved the sprite to (%f, %f)", clickPosition.x, clickPosition.y);
+                    isSelected = 0;
                 }
             }
         }
     }
 }
-
-Sprite* Scene_ChessBoard::getSelectedSprite(const cocos2d::Vec2& clickPosition)
+Soldier* Scene_ChessBoard::getSelectedSoldier(const cocos2d::Vec2& clickPosition)
 {
     // 遍历场景中的精灵，判断是否点击到精灵
     for (auto sprite : this->getChildren())
     {
-        if (sprite != board &&sprite!=STORE&& sprite->getBoundingBox().containsPoint(clickPosition) && dynamic_cast<Sprite*>(sprite))
+        if (sprite != board && sprite != STORE && sprite->getBoundingBox().containsPoint(clickPosition))
         {
-            return static_cast<Sprite*>(sprite);
+            return dynamic_cast<Soldier*>(sprite);
         }
     }
     return nullptr;
 }
-
 void Scene_ChessBoard::menuCloseCallback(Ref* pSender)
 {
     Director::getInstance()->end();
 }
-
 void Scene_ChessBoard::CARD_CALLBACK(Ref* pSender)
 {
-    
-}
 
+}
 void Scene_ChessBoard::updateTimer(float dt)
 {
     remainingTime -= dt;
@@ -621,7 +746,16 @@ void Scene_ChessBoard::endBattle()
     // ...
     
      // 重新开始计时器
-    remainingTime = 3.0f; // 重新设置剩余时间
-    battleTime = 3.0f; // 重新设置对战时间
+    remainingTime =REMAININGTIME; // 重新设置剩余时间
+    battleTime = BATTLETIME; // 重新设置对战时间
     this->schedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateTimer), 1.0f);
+}
+
+
+void Scene_ChessBoard::update(float deltaTime)
+{
+    for (auto hero : HeroInScene)
+    {
+        hero->update(deltaTime);
+    }
 }

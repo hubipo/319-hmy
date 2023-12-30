@@ -72,38 +72,43 @@ void Hero::Death()
 // 这个函数是用来搜索最近的英雄的位置的，返回1就是有，返回0就是没有
 bool Hero::findNearestHero()
 {
+    //float minDistance = -1;  // 记录最小距离
+    //Hero* nearestEnemy = nullptr;  // 记录最近的敌人
+
+
+    // 遍历场景中所有的英雄
+    /*for (auto hero : this->HerosInScene) {
+        if (hero == nullptr || hero == this)
+            continue;
+
+        // 判断是否为敌人，如果不是则跳过
+        /*if (hero->Flag == this->Flag) {
+            continue;
+        }
+        
+
+        // 计算当前英雄和其他英雄之间的距离
+        float distance = this->calculateDistance(hero);
+
+        // 如果是第一次寻找敌人或者当前敌人更近，则更新最小距离和最近的敌人
+        if (minDistance < 0 || distance < minDistance) {
+            minDistance = distance;
+            nearestEnemy = hero;
+        }
+    }*/
+    //float minDistance = -1;  // 记录最小距离
+
     for (auto hero : this->HerosInScene)
     {
         if (hero != nullptr && hero != this)
         {
             // 计算当前英雄和其他英雄之间的距离
             float distance = this->calculateDistance(hero);
-            if (distance < 50)//??????///这里的range可能最后会被修改
+            if (distance < this->range)//??????///这里的range可能最后会被修改
                 return 1;
         }
     }
     return 0;
-}
-
-
-Hero* Hero::findNearestEnemy()
-{
-    int minDistance = INT_MAX;
-    Hero* targetHero = nullptr;
-
-    for (auto hero : this->HerosInScene)
-    {
-        if (hero != nullptr && hero != this)//?????//最后可以修改为敌人
-        {
-            float distance = this->calculateDistance(hero);
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                targetHero = hero;
-            }
-        }
-    }
-    return targetHero;
 }
 
 
@@ -153,6 +158,23 @@ void Hero::HeroMove()
             this->stopAllActions();
             return;
         }
+        /*        // 获取场景中所有英雄节点
+        auto heroList = this->getParent()->getChildren();
+    for (auto& hero : heroList) {
+        // 如果是当前英雄或者不是英雄节点，则跳过
+        if (hero == this || !hero->getName().compare("background")) {
+            continue;
+        }
+        // 计算当前英雄与周围英雄的距离
+        auto distance = this->getPosition().distance(hero->getPosition());
+        // 如果距离小于指定范围，则停止移动，并输出日志信息
+        if (distance < range) {
+            this->stopAllActions();
+            CCLOG("Hero stopped due to collision with another hero.");
+            return;
+        }
+    }
+*/
     });
 
     // 创建序列动作
@@ -160,6 +182,13 @@ void Hero::HeroMove()
 
     // 执行序列动作
     this->runAction(sequence);
+
+    /*    // 执行序列动作
+    this->runAction(sequence);    auto moveAction = MoveTo::create(duration, Mid);
+    this->stopAllActions(); // 停止当前所有动作
+    this->runAction(moveAction);
+*/
+
 }
 
 /*//英雄加装备之后，本身的属性的一些变化调用这个函数
@@ -177,6 +206,28 @@ bool Hero::AddEquipment(Equipment* iequipment) {
     this->equipmentNum++;
     return 1;
 }*/
+
+
+Hero* Hero::findNearestEnemy()
+{
+    int minDistance = INT_MAX;
+    Hero* targetHero = nullptr;
+
+    for (auto hero : this->HerosInScene)
+    {
+        if (hero != nullptr && hero != this)//?????//最后可以修改为敌人
+        {
+            float distance = this->calculateDistance(hero);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                targetHero = hero;
+            }
+        }
+    }
+    return targetHero;
+}
+
 
 void Hero::moveTo(Vec2 destination)
 {
@@ -225,7 +276,6 @@ Soldier* Soldier::CreateHero(Vec2 iVec, float iSize)
 
 bool Soldier::heroCreated = false;
 
-
 Soldier::Soldier()
 {
 }
@@ -244,21 +294,23 @@ bool Soldier::init()
     this->armor = 5;
     this->attackPower = 20;
     this->attackSpeed = 0.7;
-    this->range = 30;
+    this->range = 50;
     this->strike = 25;
     this->level = 1;
     this->fee = 1;
     this->Flag = 0;
-
-    auto soldier = Sprite::create("Soldier.png");
+    soldier = Sprite::create("Hero_10086.png");
+    soldier->setName("Hero_10086");
+    soldier->setAnchorPoint(Vec2(0, 0));
     soldier->setScale(0.3f);
-    soldier->setAnchorPoint(Vec2(0.5f, 0.5f));
+    this->setContentSize(soldier->getContentSize() * 0.3);
+
     soldier->setPosition(Vec2(0, 0));
     this->addChild(soldier, 0);
 
+   
     return true;
 }
-
 void Soldier::update(float deltaTime)
 {
     Vec2 myPos = this->getPosition();
@@ -278,11 +330,6 @@ void Soldier::update(float deltaTime)
     Vec2 myNewPos = myPos + direction * 50 * deltaTime;
     this->setPosition(myNewPos);
 }
-
-
-
-
-
 
 
 

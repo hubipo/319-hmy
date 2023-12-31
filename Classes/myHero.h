@@ -14,31 +14,33 @@
 #ifndef __COCOS__
 #define __COCOS__
 #endif // !__COCOS__
-#define MAX_HP1 500
+#define MAX_HP1 500.0
+
 USING_NS_CC;
 class Hero;
 enum class HeroType {
 	heroTypeNone = -1,//这个代表哪个类也没选中
 	Soldier,// 战士
-	Shooter,//豌豆射手
-	Tank, //坚果
-	CherryBomb, //樱桃炸弹
-	Squash // 窝瓜
+	Shooter,//射手
+	Tank, //坦克
+	Wei, //蔚
+	Dragon, // 神龙尊者
+	Assassin
 };
-
-
-
 class Hero :public Sprite
 {
 public:
 	std::string name;//英雄名
 	int hp;//生命
+	int blue = 40;
 	int times;//憋大招需要的次数
 	int armor;//护甲
 	int attackPower;//攻击力
 	float attackSpeed;//攻速，这里的攻速意义是攻击时间间隔，装备对这个属性进行修改的时候是往这个数字上面去乘小数
 	int range;//攻击范围
 	int strike;//暴击率
+	int speed;
+	int attackCount = 0;//英雄累计的攻击次数，放一次大招清零一次
 	//std::mutex attackCountMutex;
 
 	int level;//等级，可选1 2 3
@@ -46,6 +48,7 @@ public:
 	int equipmentNum = 0;//英雄身上的装备数量
 	bool isAlive = 1;//判断英雄是否存活，创建这个英雄之后默认这个英雄存活
 	bool Flag;//己方是0，对方是1
+
 	cocos2d::ProgressTimer* bloodBar;
 	cocos2d::ProgressTimer* blueBar;
 
@@ -54,10 +57,8 @@ public:
 	std::vector<Hero*> HerosInScene;
 	//这个函数是用来设置英雄的属性的，是在创建的时候就设置好的,具体的图像还要调sprite里面的create函数
 	//virtual Hero* CreateHero() = 0;
-
 	void createHealthBar(Sprite* heroSprite);
 
-	//血条
 	void takeDamage(int&damage);
 
 	//输出伤害，要完成检测最近的敌人，然后进行一次攻击，attackCount++
@@ -92,13 +93,11 @@ public:
 	static bool heroCreated;
 	Sprite* soldier;
 	bool init();
-	int attackCount = 0;//英雄累计的攻击次数，放一次大招清零一次
 
 
 	CREATE_FUNC(Soldier);
 
 	Soldier();
-	int getAttackCount() { return attackCount; }
 	void UniqueSkill();
 	void stopUniqueSkill();
 	void update(float deltaTime);
@@ -113,8 +112,6 @@ public:
 	Sprite* shooter;
 	bool init();
 	Shooter();
-	int attackCount = 0;//英雄累计的攻击次数，放一次大招清零一次
-	int getAttackCount() { return attackCount; }
 	CREATE_FUNC(Shooter);
 	void UniqueSkill();
 	void stopUniqueSkill();
@@ -127,9 +124,43 @@ public:
 	Sprite* tank;
 	bool init();
 	Tank();
-	int attackCount = 0;//英雄累计的攻击次数，放一次大招清零一次
-	int getAttackCount() { return attackCount; }
 	CREATE_FUNC(Tank);
+	void UniqueSkill();
+	void stopUniqueSkill();
+	void update(float deltaTime);
+};
+
+class Wei :public Hero
+{
+public:
+	Sprite* wei;
+	bool init();
+	Wei();
+	CREATE_FUNC(Wei);
+	void UniqueSkill();
+	void stopUniqueSkill();
+	void update(float deltaTime);
+};
+
+class Dragon :public Hero
+{
+public:
+	Sprite* dragon;
+	bool init();
+	Dragon();
+	CREATE_FUNC(Dragon);
+	void UniqueSkill();
+	void stopUniqueSkill();
+	void update(float deltaTime);
+};
+
+class Assassin :public Hero
+{
+public:
+	Sprite* assassin;
+	bool init();
+	Assassin();
+	CREATE_FUNC(Assassin);
 	void UniqueSkill();
 	void stopUniqueSkill();
 	void update(float deltaTime);

@@ -31,37 +31,63 @@
 
 //template<typename T>
 //void createHealthBar(T* obj);
-//int health1;
+
 class Player : public cocos2d::Sprite
 {
 public:
-    static cocos2d::Sprite* createPlayer();
-    Player();
+    // static cocos2d::Sprite* createPlayer();
+    Player() = default;
     ~Player() = default;
 
     virtual bool init();
 
     void onMouseDown(cocos2d::EventMouse* event);
 
-    void createHealthBar(Sprite*,int maxHp);
+    void createHealthBar(Sprite*);
 
     void takeDamage();
 
+    CREATE_FUNC(Player);
+
     bool isMoving;
+    int currentHealth;//小小英雄当前的血量
+    cocos2d::ProgressTimer* bloodBar;
+    
+    //bool isAttacked;
 
-    bool isAttacked;
-
-    int money;
+    int money=8;
 
     cocos2d::Label* MONEY = nullptr;
-
-    CREATE_FUNC(Player);
 private:
     cocos2d::Sprite* heroSprite;
     float moveSpeed; // 小小英雄的移动速度
 
+    
+   
+};
+#endif //!__PLAYER_H__
+
+#ifndef __AI_PLAYER_H__
+#define __AI_PLAYER_H__
+class AIPlayer : public cocos2d::Sprite
+{
+public:
+    AIPlayer() = default;
+    ~AIPlayer() = default;
+
+    virtual bool init();
+
+
+    void createHealthBar(Sprite*);
+
+    void takeDamage();
+
+    CREATE_FUNC(AIPlayer);
+    
+    int currentHealth;//小小英雄当前的血量
     cocos2d::ProgressTimer* bloodBar;
-    float currentHealth;//小小英雄当前的血量
- 
+
+private:
+    cocos2d::Sprite* heroSprite;
 };
 #endif

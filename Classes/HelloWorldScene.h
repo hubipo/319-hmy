@@ -26,8 +26,8 @@
 #include "network/HttpClient.h"
 #include "network/SocketIO.h"
 #include "myHero.h"
-#define BATTLETIME 15
-#define REMAININGTIME 15
+#define BATTLETIME 10
+#define REMAININGTIME 25
 template <typename T>
 void createAndAddSprite(T* obj, const std::string& filename, float scale, float x, float y, int Zorder);
 template<typename T1, typename T2>
@@ -85,23 +85,80 @@ public:
     CREATE_FUNC(Scene_Setting);
 };
 #endif  __SCENE_SETTING_H__
-//ai
-#ifndef __AI_SCENE_H__
-#define __AI_SCENE_H__
-class Ai_Scene :public cocos2d::Scene {
+//*******ai**************////
+//ai1
+
+#ifndef __AI_SCENE1_H__
+#define __AI_SCENE1_H__
+class Ai_Scene1 :public cocos2d::Scene {
 public:
 
     static cocos2d::Scene* createScene();
     virtual bool init();
     void Back_To_Last_Scene(cocos2d::Ref* pSender);
-    void buyNewHero();
+    Hero* Ai[4][8];
+    //void buyNewHero();
     Player* viewPlayer;
+    //void eye(Ref* pSender);
     //std::vector<Soldier*> cloneAndReflectSprites() const;///???????
-    CREATE_FUNC(Ai_Scene);
+    CREATE_FUNC(Ai_Scene1);
 
     Soldier* soldier1;
 };
-#endif __AI_SCENE_H__
+#endif __AI_SCENE1_H__
+//ai2
+#ifndef __AI_SCENE2_H__
+#define __AI_SCENE2_H__
+class Ai_Scene2 :public cocos2d::Scene {
+public:
+
+    static cocos2d::Scene* createScene();
+    virtual bool init();
+    void Back_To_Last_Scene(cocos2d::Ref* pSender);
+    Hero* Ai[4][8];
+    //void buyNewHero();
+    Player* viewPlayer;
+    //std::vector<Soldier*> cloneAndReflectSprites() const;///???????
+    CREATE_FUNC(Ai_Scene2);
+
+    Shooter* shooter1;
+};
+#endif __AI_SCENE2_H__
+//ai3
+#ifndef __AI_SCENE3_H__
+#define __AI_SCENE3_H__
+class Ai_Scene3 :public cocos2d::Scene {
+public:
+
+    static cocos2d::Scene* createScene();
+    virtual bool init();
+    void Back_To_Last_Scene(cocos2d::Ref* pSender);
+    Hero* Ai[4][8];
+   //void buyNewHero();
+    Player* viewPlayer;
+    //std::vector<Soldier*> cloneAndReflectSprites() const;///???????
+    CREATE_FUNC(Ai_Scene3);
+
+    Soldier* soldier1;
+};
+#endif __AI_SCENE3_H__
+//*******ai**************////
+
+/********BOOK********/
+#ifndef __SCENE_BOOK_H
+#define __SCENE_BOOK_H
+class Scene_Book :public cocos2d::Scene {
+public:
+    static cocos2d::Scene* createScene();
+
+    virtual bool init();
+    void Back_To_Last_Scene(cocos2d::Ref* pSender);
+   
+    CREATE_FUNC(Scene_Book);
+};
+
+
+#endif __SCENE_BOOK_H
 
 #ifndef __SCENE_CHESSBOARD_H__
 #define __SCENE_CHESSBOARD_H__
@@ -112,14 +169,13 @@ public:
 
     virtual bool init();
     // a selector callback
-    void  goto_ai(Ref* pSender);
     void menuCloseCallback(cocos2d::Ref* pSender);
     void onMouseDown_1(cocos2d::EventMouse* event);
     Hero* getSelectedSoldier(const cocos2d::Vec2& clickPosition);
     void updateTimer(float dt);
     void updateBattleTimer(float dt);
     void startBattle();
-    void endBattle();   
+    void endBattle();
     void refreshStore();
     void refreshSeat();
     void refreshcallback(Ref* pSender);
@@ -131,10 +187,18 @@ public:
     Hero* randomSprite();
     std::vector< Hero*> HeroInScene;
     void update(float deltaTime);
-    
+    void goto_ai(Ref* pSender);
+    void refreshAiBoard(int round, int order);
+    void Book(Ref* pSender);
+    void THE_END(Ref* pSender);
 private:
+    Hero* Ai1[4][8];
+    Ai_Scene1* ai1;
+    Ai_Scene2* ai2;
+    Ai_Scene3* ai3;
     int Pos[8];
-    Ai_Scene* ai1;
+    //Ai_Scene1* ai1;
+    int Round;
     Hero* InChessBoard[4][8];
     cocos2d::Size visibleSize;
     cocos2d::Vec2 origin;
@@ -153,8 +217,11 @@ private:
     float remainingTime;
     float battleTime;
     Player* my_player;
+    AIPlayer* ai_player;
     bool isSelected;
     CREATE_FUNC(Scene_ChessBoard);
 };
 
 #endif __SCENE_CHESSBOARD_H__
+
+

@@ -85,6 +85,23 @@ public:
     CREATE_FUNC(Scene_Setting);
 };
 #endif  __SCENE_SETTING_H__
+//ai
+#ifndef __AI_SCENE_H__
+#define __AI_SCENE_H__
+class Ai_Scene :public cocos2d::Scene {
+public:
+
+    static cocos2d::Scene* createScene();
+    virtual bool init();
+    void Back_To_Last_Scene(cocos2d::Ref* pSender);
+    void buyNewHero();
+    Player* viewPlayer;
+    //std::vector<Soldier*> cloneAndReflectSprites() const;///???????
+    CREATE_FUNC(Ai_Scene);
+
+    Soldier* soldier1;
+};
+#endif __AI_SCENE_H__
 
 #ifndef __SCENE_CHESSBOARD_H__
 #define __SCENE_CHESSBOARD_H__
@@ -95,6 +112,7 @@ public:
 
     virtual bool init();
     // a selector callback
+    void  goto_ai(Ref* pSender);
     void menuCloseCallback(cocos2d::Ref* pSender);
     void onMouseDown_1(cocos2d::EventMouse* event);
     Hero* getSelectedSoldier(const cocos2d::Vec2& clickPosition);
@@ -116,6 +134,7 @@ public:
     
 private:
     int Pos[8];
+    Ai_Scene* ai1;
     Hero* InChessBoard[4][8];
     cocos2d::Size visibleSize;
     cocos2d::Vec2 origin;

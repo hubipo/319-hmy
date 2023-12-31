@@ -3,29 +3,60 @@
 #include"AppDelegate.h"
 USING_NS_CC;
 
-void Hero::getAttack(int iattackValue)
-{   
-    // 减血量
-    this->hp -= iattackValue;
+void Hero:: createHealthBar(Sprite* heroSprite)
+{
+    auto bdSprite1 = Sprite::create("blood_bd.png");
+    bdSprite1->setPosition(heroSprite->getAnchorPoint() + Vec2(50, 70));
+    bdSprite1->setScale(0.5);
+    this->addChild(bdSprite1, 0);//血条，英雄和血条底图都是Player的子节点
 
-    /*// 英雄整体变红一下
-    this->setColor(cocos2d::Color3B(255, 0, 0));
+    auto bdSprite2 = Sprite::create("blood_bd.png");
+    bdSprite2->setPosition(heroSprite->getAnchorPoint() + Vec2(50, 65));
+    bdSprite2->setScale(0.5);
+    this->addChild(bdSprite2, 0);//血条，英雄和血条底图都是Player的子节点
+    // 创建血条
+    bloodBar = ProgressTimer::create(Sprite::create("blood.png"));
+    bloodBar->setScale(0.5);
+    bloodBar->setType(ProgressTimer::Type::BAR);
+    bloodBar->setMidpoint(Vec2(0, 0.5)); // 设置进度条起点/?????
+    bloodBar->setBarChangeRate(Vec2(1, 0)); // 设置进度条变化率
+    bloodBar->setPosition(heroSprite->getAnchorPoint() + Vec2(50, 70));
+    bloodBar->setPercentage(hp); // 设置血条初始值
+    //蓝条
+    blueBar = ProgressTimer::create(Sprite::create("bluebar.png"));
+    blueBar->setScale(0.5);
+    blueBar->setType(ProgressTimer::Type::BAR);
+    blueBar->setMidpoint(Vec2(0, 0.5)); // 设置进度条起点/?????
+    blueBar->setBarChangeRate(Vec2(1, 0)); // 设置进度条变化率
+    blueBar->setPosition(heroSprite->getAnchorPoint() + Vec2(50, 65));
+    blueBar->setPercentage(40);// 设置血条初始值
 
-    // 假设延时一段时间后取消染色状态
-    cocos2d::DelayTime* delay = cocos2d::DelayTime::create(0.5f);
-    cocos2d::CallFunc* removeColor = cocos2d::CallFunc::create([this]() {
-        this->setColor(cocos2d::Color3B(255, 255, 255));
-        });
-    cocos2d::Sequence* sequence = cocos2d::Sequence::create(delay, removeColor, nullptr);
-    this->runAction(sequence);*/
-    
+    //currentHealth = 100.0f;//
+    this->addChild(bloodBar, 0);
+    this->addChild(blueBar, 0);
+
 }
+void Hero::takeDamage(int&damage) {
+    if (!bloodBar) {
+        return;
+    }
+    //受到的伤害值
+    hp -= damage;
 
+    if (hp< 0.0f) {
+        hp = 0.0f;
+    }
+    /*
+    * 如果血量为零，英雄图片改为死亡图片
+    */
+    bloodBar->setPercentage(hp / MAX_HP1 * 100);//将血量减少显示
+}
 void Hero::Attack(Hero* targetHero)
 {
     
     //targetHero->getAttack(this->attackPower);
     targetHero->hp -= this->attackPower;
+    targetHero->takeDamage(this->attackPower);
     //this->attackCount++;
     return;
 }
@@ -100,6 +131,7 @@ float Hero::calculateDistance(Hero* hero) const {
 //战士 红剑魔
 void Soldier::update(float deltaTime)
 {
+
     Vec2 myPos = this->getPosition();
 
     Hero* targetHero = findNearestEnemy();
@@ -175,8 +207,14 @@ bool Soldier::init()
     soldier->setScale(0.3f);
     this->setContentSize(soldier->getContentSize() * 0.3);
 
+
+   
+    
+
     soldier->setPosition(Vec2(0, 0));
     this->addChild(soldier, 0);
+    //healthbar
+    createHealthBar(soldier);
     return true;
 }
 //射手
@@ -206,12 +244,18 @@ bool Shooter::init()
     shooter->setScale(0.3f);
     this->setContentSize(shooter->getContentSize() * 0.3);
 
+
+    
+
     shooter->setPosition(Vec2(0, 0));
     this->addChild(shooter, 0);
+    //healthbar
+    createHealthBar(shooter);
     return true;
 }
 void Shooter::update(float deltaTime)
 {
+    
     Vec2 myPos = this->getPosition();
 
     Hero* targetHero = findNearestEnemy();
@@ -286,12 +330,18 @@ bool Tank::init()
     tank->setScale(0.3f);
     this->setContentSize(tank->getContentSize() * 0.3);
 
+   
+
     tank->setPosition(Vec2(0, 0));
     this->addChild(tank, 0);
+    //healthbar
+    createHealthBar(tank);
     return true;
 }
 void Tank::update(float deltaTime)
 {
+    
+
     Vec2 myPos = this->getPosition();
 
     Hero* targetHero = findNearestEnemy();

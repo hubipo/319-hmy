@@ -19,10 +19,16 @@ void createHealthBar(T* obj) {
     currentHealth = 100.0f;
     obj->addChild(bloodBar, 0);
 }*/
-/*Sprite* Player::createPlayer()
+/*
+Sprite* Player::createPlayer()
 {
     return Player::create();
-    }*/
+}*/
+Player::Player() {
+    heroSprite = nullptr;
+
+    bloodBar = nullptr;
+}
 bool Player::init()
 {
     if (!Sprite::init()) {
@@ -34,6 +40,8 @@ bool Player::init()
     isAttacked = false;
     moveSpeed = SPEAD; // 小小英雄的移动速度
     currentHealth = MAX_HP;
+
+    money = 8;
     //获取屏幕
     //cocos2d::Size screenSize = cocos2d::Director::getInstance()->getVisibleSize();
     //cocos2d::Vec2 spritePosition(screenSize.width / 2, screenSize.height / 2);
@@ -47,7 +55,7 @@ bool Player::init()
     
 
     // 创建血条
-    createHealthBar(heroSprite);
+    createHealthBar(heroSprite,MAX_HP);
     /*
     auto bdSprite = Sprite::create("blood_bd.png");
     bdSprite->setPosition(heroSprite->getPosition()+Vec2(25,50));
@@ -72,20 +80,21 @@ bool Player::init()
 
     return true;
 }
-void Player::createHealthBar(Sprite*heroSprite) {
+void Player::createHealthBar(Sprite*heroSprite,int maxHp) {
     auto bdSprite = Sprite::create("blood_bd.png");
     bdSprite->setPosition(heroSprite->getAnchorPoint() + Vec2(12, 25));
     bdSprite->setScale(0.5);
     this->addChild(bdSprite, 0);//血条，英雄和血条底图都是Player的子节点
 
     // 创建血条
-    auto bloodBar = ProgressTimer::create(Sprite::create("blood.png"));
+    bloodBar = ProgressTimer::create(Sprite::create("blood.png"));
     bloodBar->setScale(0.5);
     bloodBar->setType(ProgressTimer::Type::BAR);
     bloodBar->setMidpoint(Vec2(0, 0.5)); // 设置进度条起点/?????
     bloodBar->setBarChangeRate(Vec2(1, 0)); // 设置进度条变化率
     bloodBar->setPosition(heroSprite->getAnchorPoint() + Vec2(12, 25));
-    bloodBar->setPercentage(100); // 设置血条初始值
+    bloodBar->setPercentage(currentHealth/maxHp*100); // 设置血条初始值
+
     //currentHealth = 100.0f;//
     this->addChild(bloodBar, 0);
 }
@@ -170,8 +179,7 @@ void Player::takeDamage() {
     /*
     * 如果血量为零，英雄图片改为死亡图片
     */
-    float healthPercentage = currentHealth/MAX_HP;
-    bloodBar->setPercentage(healthPercentage);//将血量减少显示
+    bloodBar->setPercentage(currentHealth / MAX_HP * 100);//将血量减少显示
 
 }
 //整体节点

@@ -340,6 +340,75 @@ void Scene_Setting::End_The_Game(Ref* pSender)
     Director::getInstance()->end();
 }
 /********************************/
+//Ai_Scene
+/********************************/
+bool Ai_Scene::init() {
+    if (!Scene::init())
+    {
+        return false;
+    }
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+    createAndAddSprite(this, "board-2d.png", 1.135f, origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2, 0);
+    auto BACK = MenuItemImage::create("Back.png", "Back.png", CC_CALLBACK_1(Ai_Scene::Back_To_Last_Scene, this));
+    modifyMenuItem(this, BACK, origin.x + visibleSize.width / 10, origin.y + visibleSize.height * 9.2 / 10.0, 0.7f, 1);
+    //**++++++++++++++++++++++++++++++++++++++//
+    soldier1 = Soldier::create();
+    soldier1->setPosition(Vec2(origin.x + visibleSize.width / 2 -100, origin.y + visibleSize.height / 2  -100));
+    this->addChild(soldier1, 0);
+    Label* ROUND = new Label;
+
+    viewPlayer = Player::create();
+    viewPlayer->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2));
+    this->addChild(viewPlayer, 2);
+    /*
+    createAndAddLabel(this, ROUND, "", origin.x + visibleSize.width / 2, visibleSize.height * 9.7 / 10.0, 2);
+    ROUND->setColor(Color3B::BLUE);
+    ROUND->setString("ROUND " + std::to_string(round2));
+    */
+    //++++++++++++++++++++++++++++++++++++++
+    
+    return true;
+}
+void Ai_Scene::buyNewHero() {
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    /*
+    if (round1 == 2) {
+        auto soldier2 = Soldier::create();
+        soldier2->setPosition(Vec2(origin.x + visibleSize.width / 2 + 50, origin.y + visibleSize.height / 2 + 10));
+        this->addChild(soldier2, 0);
+    }
+    round1++;
+    */
+}
+/*
+std::vector<Soldier*> Ai_Scene::cloneAndReflectSprites() const {
+    std::vector<cocos2d::Sprite*> clones;
+    // 将场景二中的所有精灵进行中心对称克隆，并将克隆后的精灵添加到列表中
+    for (const auto& child : this->getChildren()) {
+        if (auto sprite = dynamic_cast<Soldier*>(child)) {
+            auto clone = sprite->clone();
+
+            // 进行中心对称操作
+            auto size = Director::getInstance()->getWinSize();
+            clone->setPosition(Vec2(size.width - clone->getPositionX(), clone->getPositionY()));
+
+            clones.push_back(clone);
+        }
+    }
+    return clones;
+}*/
+Scene* Ai_Scene::createScene() {
+    
+    return Ai_Scene::create();
+}
+void Ai_Scene::Back_To_Last_Scene(Ref* pSender)
+{
+    Director::getInstance()->popScene();
+}
+/********************************/
 //Scene_ChessBoard
 /********************************/
 Scene* Scene_ChessBoard::createScene()
@@ -369,8 +438,7 @@ bool Scene_ChessBoard::init()
     TimeLabel->enableOutline(Color4B::MAGENTA,1);
     TimeLabel->setScale(0.5f);
     //this->addChild(TimeLabel,2);
-
-    ///////
+    
 
     auto closeItem = MenuItemImage::create("CloseNormal.png", "CloseSelected.png", CC_CALLBACK_1(Scene_ChessBoard::menuCloseCallback, this));
     modifyMenuItem(this, closeItem, origin.x + visibleSize.width - closeItem->getContentSize().width / 2, origin.y + closeItem->getContentSize().height / 2, 1.0f, 1);
@@ -403,6 +471,26 @@ bool Scene_ChessBoard::init()
     //storePos = Vec2(STORE->getPosition().x - STORE->getContentSize().width / 2, STORE->getPosition().y - STORE->getContentSize().height / 2);
     //createAndAddSprite(this, "board1.png", 2.0f, visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y, 0);
     //createAndAddSprite(this, "cardboard.jpg", 0.5f, visibleSize.width / 2 + origin.x, origin.y + 40, 0);//卡牌栏
+   
+    
+    //英雄展示
+    auto soldier1 = Soldier::create();
+    soldier1->setPosition(Vec2(origin.x + visibleSize.width / 2 - 100, origin.y + visibleSize.height / 2 - 100));
+    this->addChild(soldier1, 0);
+
+    auto soldier2 = Soldier::create();
+    soldier2->setPosition(Vec2(origin.x + visibleSize.width / 2 + 100, origin.y + visibleSize.height / 2 + 100));
+    this->addChild(soldier2, 0);
+
+    this->HeroInScene.push_back(soldier1);
+    this->HeroInScene.push_back(soldier2);
+
+    soldier1->HerosInScene = this->HeroInScene;
+    soldier2->HerosInScene = this->HeroInScene;
+
+
+    scheduleUpdate();
+    
     //小小英雄
     my_player = Player::create();
     my_player->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2));
@@ -412,6 +500,13 @@ bool Scene_ChessBoard::init()
     if (my_player->isAttacked) {
         my_player->takeDamage();
     }
+    //money
+
+    createAndAddLabel(this, my_player->MONEY, "", origin.x + visibleSize.width / 2, visibleSize.height * 9.7 / 10.0, 2);
+    my_player->MONEY->setColor(Color3B::YELLOW);
+    my_player->MONEY->setString("MONEY " + std::to_string(my_player->money));
+
+    ///////
 
 
     auto listener = EventListenerMouse::create();
@@ -419,9 +514,29 @@ bool Scene_ChessBoard::init()
     Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
     refreshStore();
     
+    //AI scene
+    //setAiHero = true;
+    auto VIEW_AI = MenuItemImage::create("SETTINGS.png", "SETTINGS.png", CC_CALLBACK_1(Scene_ChessBoard::goto_ai, this));
+    modifyMenuItem(this,VIEW_AI, origin.x + visibleSize.width * 9.5 / 10.0, origin.y + visibleSize.height * 9.3 / 10, 0.3f, 1);
 
     return true;
 }
+//ai
+void Scene_ChessBoard::goto_ai(Ref* pSender) {
+    //auto VIEW_AI = Ai_Scene::createScene();
+    ai1 = Ai_Scene::create();
+    Director::getInstance()->pushScene(TransitionCrossFade::create(1,ai1));
+}
+//**//
+void Scene_ChessBoard::update(float deltaTime)
+{
+    for (auto hero : HeroInScene)
+    {
+        hero->update(deltaTime);
+    }
+}
+
+/**/
 Sprite* Scene_ChessBoard::randomSprite()
 {
     int x;
@@ -447,8 +562,13 @@ Sprite* Scene_ChessBoard::randomSprite()
     }
 }
 void Scene_ChessBoard::refreshcallback(Ref* pSender)
-{
-    refreshStore();
+{//***///
+    if (my_player->money >= 2) {
+        my_player->money -= 2;
+        my_player->MONEY->setString("MONEY " + std::to_string(my_player->money));
+
+        refreshStore();
+    }
 }
 void Scene_ChessBoard::refreshStore()
 {
@@ -503,9 +623,11 @@ void Scene_ChessBoard::onMouseDown_1(cocos2d::EventMouse* event)
             // 检查鼠标点击位置是否在图片上
             Sprite* newSelectedSprite = getSelectedSprite(clickPosition);
            // if (clickPosition.x > visibleSize.width * 9 / 10.0 && clickPosition.x < visibleSize.width && clickPosition.y<origin.y + 270 && clickPosition.y > origin.y + 170 && newSelectedSprite)
-            if (storeRange.containsPoint(clickPosition) && newSelectedSprite)
-            {
-                
+            if (storeRange.containsPoint(clickPosition) && newSelectedSprite&&my_player->money>=1)
+            {//**//////
+               
+                    my_player->money -= 1;
+                    my_player->MONEY->setString("MONEY " + std::to_string(my_player->money));
                 for (unsigned int i = 0; i < 8; i++)
                 {
                     if (Pos[i] == 0)
@@ -574,11 +696,27 @@ void Scene_ChessBoard::CARD_CALLBACK(Ref* pSender)
 
 void Scene_ChessBoard::updateTimer(float dt)
 {
+    /*
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    */
     remainingTime -= dt;
+    //remainingTime时添加ai英雄/*
+    /*
+    if (setAiHero) {
+        if (remainingTime > 2) {
+            auto soldier1 = Soldier::create();
+            soldier1->setPosition(Vec2(20*remainingTime,20*remainingTime));
+            //ai1->addChild(soldier1, 0);
 
+        }
+    }*/
+    //ai1->buyNewHero();
+   
     if (remainingTime <= 0.0f)
     {
-        // 开始对战
+        // 开始对战 setAiHero = false;
+        //setAiHero = false;
         startBattle();
     }
     // 更新剩余时间Label的显示内容
@@ -616,10 +754,12 @@ void Scene_ChessBoard::endBattle()
 {
     // 停止对战计时器
     this->unschedule(CC_SCHEDULE_SELECTOR(Scene_ChessBoard::updateBattleTimer));
-
+    my_player->money += my_player->money / 5 + 6;
+    my_player->MONEY->setString("MONEY " + std::to_string(my_player->money));
     // 执行对战结束的逻辑，例如显示得分、播放结束动画等
     // ...
-    
+    my_player->takeDamage();
+    //ai1->viewPlayer->takeDamage();
      // 重新开始计时器
     remainingTime = 3.0f; // 重新设置剩余时间
     battleTime = 3.0f; // 重新设置对战时间

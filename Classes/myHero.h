@@ -11,7 +11,7 @@
 #ifndef __COCOS__
 #define __COCOS__
 #endif // !__COCOS__
-
+#define soldierMAX_HP 100
 USING_NS_CC;
 
 enum class HeroType {
@@ -42,6 +42,7 @@ public:
 	int attackCount = 0;//英雄累计的攻击次数，放一次大招清零一次
 	bool isAlive = 1;//判断英雄是否存活，创建这个英雄之后默认这个英雄存活
 	bool Flag;//己方是0，对方是1
+	void createHealthBar(Sprite* heroSprite, int maxHp);
 
 	HeroType heroType;
 

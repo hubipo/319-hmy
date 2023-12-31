@@ -3,6 +3,24 @@
 #include"AppDelegate.h"
 USING_NS_CC;
 
+void Hero::createHealthBar(Sprite* heroSprite, int maxHp) {
+    auto bdSprite = Sprite::create("blood_bd.png");
+    bdSprite->setPosition(heroSprite->getAnchorPoint() + Vec2(12, 25));
+    bdSprite->setScale(0.2);
+    this->addChild(bdSprite, 0);//血条，英雄和血条底图都是Player的子节点
+
+    // 创建血条
+    auto bloodBar = ProgressTimer::create(Sprite::create("blood.png"));
+    bloodBar->setScale(0.2);
+    bloodBar->setType(ProgressTimer::Type::BAR);
+    bloodBar->setMidpoint(Vec2(0, 0.5)); // 设置进度条起点/?????
+    bloodBar->setBarChangeRate(Vec2(1, 0)); // 设置进度条变化率
+    bloodBar->setPosition(heroSprite->getAnchorPoint() + Vec2(12, 25));
+    bloodBar->setPercentage(hp * 100.0 / maxHp ); // 设置血条初始值
+
+    //currentHealth = 100.0f;//
+    this->addChild(bloodBar, 0);
+}
 void Hero::getAttack(int iattackValue)
 {
     // 减血量
@@ -255,6 +273,8 @@ bool Soldier::init()
     soldier->setAnchorPoint(Vec2(0.5f, 0.5f));
     soldier->setPosition(Vec2(0, 0));
     this->addChild(soldier, 0);
+
+    createHealthBar(soldier, soldierMAX_HP);
 
     return true;
 }

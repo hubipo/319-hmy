@@ -45,7 +45,7 @@ public:
 	void createHealthBar(Sprite* heroSprite, int maxHp);
 
 	HeroType heroType;
-
+	Hero* findNearestEnemy();
 
 	std::vector<Hero*> HerosInScene;
 
@@ -78,8 +78,6 @@ public:
 	//bool AddEquipment(Equipment* iequipment);
 
 	//这个函数是用来搜索最近的敌人的位置的
-	Hero* findNearestEnemy();
-
 	bool findNearestHero();
 
 	// 计算当前英雄和另一个英雄之间的距离
@@ -91,19 +89,17 @@ class Soldier :public Hero
 {
 public:
 	static bool heroCreated;
-
-	bool init();
+	Sprite* soldier;
+    bool init();
 
 	CREATE_FUNC(Soldier);
 
 	Soldier();
 	static Soldier* CreateHero(Vec2 iVec,float iSize);
+	bool onTouchBegan(Touch* touch, Event* event);
 	void UniqueSkill();
 	void stopUniqueSkill();
 	void update(float deltaTime);
-
 };
-
-
 
 #endif

@@ -14,7 +14,7 @@
 #ifndef __COCOS__
 #define __COCOS__
 #endif // !__COCOS__
-#define soldierMAX_HP 100
+#define MAX_HP1 500
 USING_NS_CC;
 class Hero;
 enum class HeroType {
@@ -46,7 +46,8 @@ public:
 	int equipmentNum = 0;//英雄身上的装备数量
 	bool isAlive = 1;//判断英雄是否存活，创建这个英雄之后默认这个英雄存活
 	bool Flag;//己方是0，对方是1
-	void createHealthBar(Sprite* heroSprite, int maxHp);
+	cocos2d::ProgressTimer* bloodBar;
+	cocos2d::ProgressTimer* blueBar;
 
 	HeroType heroType;
 
@@ -54,11 +55,10 @@ public:
 	//这个函数是用来设置英雄的属性的，是在创建的时候就设置好的,具体的图像还要调sprite里面的create函数
 	//virtual Hero* CreateHero() = 0;
 
+	void createHealthBar(Sprite* heroSprite);
 
-
-
-	//受到伤害，想法是要减血量，然后英雄整体变红一下
-	void getAttack(int iattackValue);
+	//血条
+	void takeDamage(int&damage);
 
 	//输出伤害，要完成检测最近的敌人，然后进行一次攻击，attackCount++
 	void Attack(Hero* targetHero);
